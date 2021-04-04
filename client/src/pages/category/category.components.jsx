@@ -9,15 +9,15 @@ import { selectCollection } from '../../redux/shop/shop.selectors'
 import { CollectionPageWrap , CollectionWrap, CollectionItemsWrap } from './category.styles.jsx' 
 
 const CategoryPage = ({ collection }) => {
-	const { title , items } = collection; 
+	// const { title , items } = collection; 
 	return (
 	<CollectionPageWrap >
-		<CollectionWrap > {title} </CollectionWrap>
+{/*		<CollectionWrap > {title} </CollectionWrap>
 		<CollectionItemsWrap >
 			{
 				items.map(item => <CollectionItem key={item.id} item={item} />)
 			}
-		</CollectionItemsWrap>
+		</CollectionItemsWrap>*/}
 	</CollectionPageWrap>	
 );};
 

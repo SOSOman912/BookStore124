@@ -19,9 +19,6 @@ const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden
 					<OptionsContainer>
 						<LinkContainer>	
 							<OptionLink to='/shop'>
-								Shop All
-							</OptionLink>
-							<OptionLink to='/shop'>
 								CONTACT
 							</OptionLink> 
 							{

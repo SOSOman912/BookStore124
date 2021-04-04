@@ -5,14 +5,13 @@ import { connect } from 'react-redux'
 import { CheckOutItem, ImageContainer, Image, Name, Quantity, Price, Arrow, Value, RemoveButton } from './checkout-item.styles.jsx'
 
 const CheckoutItem = ({ cartItem, clearItem, addItem, removeItem}) => {
-	const { product_name, images, sale_price, quantity } = cartItem;
-	const imageToShow = images.split(',');
+	const { original_title, image_url , sale_price, quantity } = cartItem;
 	return(
 		<CheckOutItem>
 			<ImageContainer>
-				<Image src={imageToShow[0]} alt='item' />
+				<Image src={image_url} alt='item' />
 			</ImageContainer>
-			<Name>{product_name}</Name>
+			<Name>{original_title}</Name>
 			<Quantity>
 				<Arrow onClick={() => removeItem(cartItem)}>&#10094;</Arrow>
 					<Value>{quantity}</Value>

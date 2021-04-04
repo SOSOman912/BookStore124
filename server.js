@@ -2,13 +2,103 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const session = require('cookie-session');
 const {WebhookClient , Card, Suggestion} = require('dialogflow-fulfillment');
 const { Pool, Client } = require("pg");
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+
 const app = express();
-const port = process.env.PORT || 5000;
-var number = 0;
+const port = process.env.PORT || 5000
+
+const pool = new Pool({
+    connectionString: 'postgres://eznxnvpxfqdhmm:3eaeb97fb42d2c9ab35defcbbcc0fad1f34e31aba5c2f9c1371cda56f70d4440@ec2-52-45-73-150.compute-1.amazonaws.com:5432/d7mefmitu75ame',
+    ssl: {
+      rejectUnauthorized:false
+    }
+  });
+const UploadingDataToPostgreSQL = async(data) => {
+  const query = `INSERT INTO customerinformation (user_id, username, email)VALUES('${data.user_id}','${data.username}','${data.email}')`;
+  try {
+    const client = await pool.connect();
+      client.query(query);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const GetcustomerDatabase = async(data) => {
+  const query = `SELECT * FROM customerinformation`
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    return res.rows;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const GetcustomerInformation = async(data) => {
+  const query = `SELECT * FROM customerinformation WHERE user_id = '${data}'`
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    return res.rows;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const RetrievingDatasFromPostgreSQLforBasicfunction = async() => {
+    const query = `SELECT * FROM booksinformation WHERE id < 100` ;
+  try {
+    
+    const client = await pool.connect();
+    const res = await client.query(query);
+    return res.rows;
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const RetrievingDatasFromPostgreSQL = async() => {
+    const query = `SELECT * FROM booksinformation` ;
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    app.set("booksinformation",res.rows);
+    return res.rows;
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const CheckIfCustomerExisted = async(data) => {
+  const query = `SELECT EXISTS(SELECT true FROM customerinformation WHERE user_id = '${data}')`
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    return res.rows;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const AddingShoesToCartList = async(data,itemlist) => {
+  const query = `UPDATE customerinformation SET cart_list = '${itemlist}' WHERE user_id = '${data.user_id}'`
+  console.log(query);
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    console.log('CartList Update SUCCESS');
+    console.log(res.rows);
+    return res.rows;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -22,13 +112,6 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
   });
 }
-
-const pool = new Pool({
-  user: "dickylam",
-  host: "localhost",
-  database: "crwnclothing",
-  port: "5432"
-})
 
 pool.on('error', (err, client) => {
   console.error('Error:',err);
@@ -83,8 +166,12 @@ const dialogflowFulfillment = async(request, response) => {
     const Lookforproduct = (agent) => {
       const content = request.body;
       const requirement = {
-          shoestype: content.queryResult.parameters.shoestype
+          shoestype: content.queryResult.parameters.shoestype,
+          SportType: content.queryResult.parameters.SportType,
+          Shoesbrand: content.queryResult.parameters.Shoesbrand,
+          gender: content.queryResult.parameters.gender
       }
+      app.set("ProductRequirement",requirement);
 
       var possibleResponse = [
       'Of course! Is there any or more requirement?',
@@ -98,85 +185,13 @@ const dialogflowFulfillment = async(request, response) => {
       agent.add(response);
     }
 
-    const NoForLookforproductFirstTime = async (agent) => {
+    const NoForLookforproduct = async (agent) => {
+        const content = request.body.queryResult.outputContexts[0].parameters;
+        var number = 0;
+        app.set("number",number);
+        var requirement = app.get("ProductRequirement");
 
-      var number = 0;
-
-      const content = request.body.queryResult.outputContexts[1].parameters;
-      const requirement = {
-          ItemToShow: content.ItemToShow,
-          shoestype: content.shoestype,
-          SportType: content.SportType,
-          Shoesbrand: content.Shoesbrand,
-          gender: content.gender
-      }
-
-      const productdata = await RetrievingDataFromPostgreSQL();
-      if (requirement.shoestype != null) {
-        var array1 = productdata.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array1 = productdata;
-      }
-
-      if (requirement.SportType != null) {
-        var array2 = array1.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.SportType) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array2 = array1;
-      }
-
-      if (requirement.Shoesbrand != null) {
-        var array3 = array2.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.Shoesbrand) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array3 = array2;
-      }
-
-      if (requirement.Shoesbrand != null) {
-        var array4 = array3.filter(data => {
-          if (data.gender.toLowerCase().includes(requirement.gender) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array4 = array3;
-      }
-
-      var Itemtoshow = 0;
-      var Imagetoshow = array4[Itemtoshow].images.split(',');
-
-      agent.add(new Card({
-        title: array4[Itemtoshow].product_name,
-        imageUrl: Imagetoshow[Itemtoshow],
-        text: 'This is the body text of a card'
-      }));
-      agent.add(new Suggestion(`Please help me to add this ${requirement.shoestype} to my cart list`));
-      agent.add(new Suggestion(`I don't like this ${requirement.shoestype}, Can you suggest Me another one?`));
-      };
-
-      const SuggestAnotherProduct = async (agent) => {  
-      number = number + 1;
-
-      const content = request.body.queryResult.outputContexts[1].parameters;
-      const requirement = {
-          ItemToShow: content.ItemToShow,
-          shoestype: content.shoestype,
-          SportType: content.SportType,
-          Shoesbrand: content.Shoesbrand,
-          gender: content.gender
-      }
-
-      const productdata = await RetrievingDataFromPostgreSQL();
+      const productdata = app.get("booksinformation");
       if (requirement.shoestype != null) {
         var array1 = productdata.filter(data => {
           if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
@@ -225,22 +240,154 @@ const dialogflowFulfillment = async(request, response) => {
         imageUrl: Imagetoshow[Itemtoshow],
         text: 'This is the body text of a card'
       }));
-      agent.add(new Suggestion(`Please help me to add this ${requirement.shoestype} to my cart list`));
-      agent.add(new Suggestion(`I don't like this ${requirement.shoestype}, Can you suggest Me another one?`));
+      
+      agent.add(new Suggestion(`Please help me to add this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype} to my cart list`));
+      agent.add(new Suggestion(`I don't like this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype}, Can you suggest Me another one?`));
       };
+
+      const SuggestAnotherProduct = async (agent) => {  
+
+      const content = request.body.queryResult.outputContexts[0].parameters;
+      var requirement = app.get("ProductRequirement");
+      var number = app.get("number");
+      number = number + 1;
+      app.set("number",number);
+
+      const productdata = app.get("booksinformation");
+      if (requirement.shoestype != null) {
+        var array1 = productdata.filter(data => {
+          if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array1 = productdata;
+      }
+
+      if (requirement.SportType != null) {
+        var array2 = array1.filter(data => {
+          if (data.product_name.toLowerCase().includes(requirement.SportType) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array2 = array1;
+      }
+
+      if (requirement.Shoesbrand != null) {
+        var array3 = array2.filter(data => {
+          if (data.product_name.toLowerCase().includes(requirement.Shoesbrand) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array3 = array2;
+      }
+
+      if (requirement.Shoesbrand != null) {
+        var array4 = array3.filter(data => {
+          if (data.gender.toLowerCase().includes(requirement.gender) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array4 = array3;
+      }
+
+      var Itemtoshow = number;
+      var Imagetoshow = array4[Itemtoshow].images.split(',');
+
+      agent.add(new Card({
+        title: array4[Itemtoshow].product_name,
+        imageUrl: Imagetoshow[Itemtoshow],
+        text: 'This is the body text of a card'
+      }));
+      agent.add(new Suggestion(`Please help me to add this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype} to my cart list`));
+      agent.add(new Suggestion(`I don't like this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype}, Can you suggest Me another one?`));
+      };
+
+      const AddingShoesToCartListWithChatBot = async(agent) => {
+        const content = request.body.queryResult.outputContexts[0].parameters;
+      var requirement = app.get("ProductRequirement");
+
+      const productdata = app.get("booksinformation");
+      if (requirement.shoestype != null) {
+        var array1 = productdata.filter(data => {
+          if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array1 = productdata;
+      }
+
+      if (requirement.SportType != null) {
+        var array2 = array1.filter(data => {
+          if (data.product_name.toLowerCase().includes(requirement.SportType) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array2 = array1;
+      }
+
+      if (requirement.Shoesbrand != null) {
+        var array3 = array2.filter(data => {
+          if (data.product_name.toLowerCase().includes(requirement.Shoesbrand) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array3 = array2;
+      }
+
+      if (requirement.Shoesbrand != null) {
+        var array4 = array3.filter(data => {
+          if (data.gender.toLowerCase().includes(requirement.gender) == true) {
+            return data;
+          }
+        })
+      } else {
+        var array4 = array3;
+      }
+
+      var Itemtoshow = number;
+
+      const snapshot = 
+      {
+        product_id:array4[number].product_id,
+        quantity:1
+      }
+      console.log("Item to added to database with chatbot:",snapshot)
+      var Origincartlist = app.get('updatedCartlist');
+      console.log("CurrentCartListState:",Origincartlist);
+      var AddedToDatabaseWithChatbot = Origincartlist.push(snapshot);
+      app.set('updatedCartlist',AddedToDatabaseWithChatbot);      
+      console.log(Origincartlist);
+      var currentUser = app.get('currentUser');
+      const itemlist = JSON.stringify(Origincartlist);
+      AddingShoesToCartList(currentUser[0],itemlist);
+
+      agent.add("Your shoes have already been added into the cartlist, before you pay your bill, please reflesh the pages first.");
+      }
 
     let intentMap = new Map();
     intentMap.set("Welcome", Welcome);
     intentMap.set("Lookforproduct", Lookforproduct);
-    intentMap.set("Lookforproduct - no", NoForLookforproductFirstTime);
+    intentMap.set("Lookforproduct - no", NoForLookforproduct);
     intentMap.set("Lookforproduct-no-Move to other shoes", SuggestAnotherProduct);
+    intentMap.set("Lookforproduct-no-additemtocart", AddingShoesToCartListWithChatBot );
     agent.handleRequest(intentMap)
   }
 
+app.get('/getDataForBasicUse', async(req, res) => {
+    var ResData = await RetrievingDatasFromPostgreSQLforBasicfunction();
+    res.send(ResData);  
+})
+
 app.get('/getData', async(req, res) => {
     
-    var ResData = await RetrievingDataFromPostgreSQL();
-
+    var ResData = await RetrievingDatasFromPostgreSQL();
     res.send(ResData);  
 })
 
@@ -252,7 +399,9 @@ app.post('/updatecartlist', async(req,res) => {
           }
         ));
     const itemlist = JSON.stringify(snapshot);
-    AddingShoesToCartList(req.body,itemlist);
+    console.log(snapshot);
+    app.set('updatedCartlist',snapshot);
+    AddingShoesToCartList(req.body.users,itemlist);
 })
 
 app.post('/userDocumentUpload', (request, response) => {
@@ -260,8 +409,12 @@ app.post('/userDocumentUpload', (request, response) => {
 });
 
 app.get('/login', async (request, response) => {
-  var ProductData = await RetrievingDataFromPostgreSQL();
+  var ProductData = app.get("booksinformation");
   var customerdata = await GetcustomerInformation(request.query.user_id);
+
+  app.set('currentUser',customerdata);
+  console.log(customerdata[0].cart_list);
+  app.set('updatedCartlist',customerdata[0].cart_list);
 
   if(customerdata[0].cart_list) { 
     var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
@@ -281,6 +434,8 @@ app.get('/login', async (request, response) => {
     cart_list: TranformingCartList
   }
 
+
+
   response.send(ResData);
 });
 
@@ -288,62 +443,9 @@ app.get('/checkifexist', async (request,response) => {
   var ResData = await CheckIfCustomerExisted(request.query.user_id);
 
   response.send(ResData);
+
 })
 
-const UploadingDataToPostgreSQL = async(data) => {
-  const query = `INSERT INTO customerinformation (user_id, username, email)VALUES('${data.user_id}','${data.username}','${data.email}')`;
 
-  try {
-    const client = await pool.connect();
-      client.query(query);
-  } catch (err) {
-    console.log(err);
-  }
-}
 
-const GetcustomerInformation = async(data) => {
-  const query = `SELECT * FROM customerinformation WHERE user_id = '${data}'`
-  try {
-    const client = await pool.connect();
-    const res = await client.query(query);
-    return res.rows;
-  } catch (err) {
-    console.log(err);
-  }
-}
 
-const RetrievingDataFromPostgreSQL = async() => {
-    const query = `SELECT * FROM productinformation`;
-  try {
-    
-    const client = await pool.connect();
-    const res = await client.query(query);
-    return res.rows;
-
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-const CheckIfCustomerExisted = async(data) => {
-  const query = `SELECT EXISTS(SELECT true FROM customerinformation WHERE user_id = '${data}')`
-  try {
-    const client = await pool.connect();
-    const res = await client.query(query);
-    return res.rows;
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-const AddingShoesToCartList = async(data,itemlist) => {
-  console.log('AddingShoesToCartList',itemlist);
-  const query = `UPDATE customerinformation SET cart_list = '${itemlist}' WHERE user_id = '${data.users.user_id}'`
-  try {
-    const client = await pool.connect();
-    const res = await client.query(query);
-    return res.rows;
-  } catch (err) {
-    console.log(err);
-  }
-}

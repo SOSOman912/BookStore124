@@ -10,16 +10,15 @@ import { ImageAndCustomButtonWrapper, CollectionItemWrap, Image, ButtonWrapper, 
 
 
 const CollectionItem =({ item, addItem, addElaboratedItem}) => {
-	const { product_name, sale_price, images } = item;
-	const imageToShow = images.split(',');
-	
+	const { authors , image_url, original_title } = item;
+
 	return (
 		<CollectionItemWrap >
 			<ImageAndCustomButtonWrapper>
 				<Image
 					className='image'
 					style={{
-				 		backgroundImage: `url(${imageToShow[0]})`
+				 		backgroundImage: `url(${image_url})`
 					 }}
 				 />	
 				 <ButtonWrapper>
@@ -28,8 +27,9 @@ const CollectionItem =({ item, addItem, addElaboratedItem}) => {
 				</ButtonWrapper>
 			</ImageAndCustomButtonWrapper>
 				<CollectionFooter>
-						<Name className='name'>{product_name}</Name>
-						<Price className='price'>${sale_price}</Price>
+						<Name className='name'>{original_title}</Name>
+						<Name className='author'><b>Author:</b> {authors}</Name>
+			{/*			<Price className='price'>${sale_price}</Price>*/}
 				</CollectionFooter>
 		</CollectionItemWrap>)
 }

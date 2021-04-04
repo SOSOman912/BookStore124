@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const CollectionPreviewWrap = styled.div`
-  width:1525px;
+  width:100%;
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
@@ -18,6 +18,6 @@ export const TitleWrap = styled.h1`
 `;
 
 export const PreviewWrap = styled.div`
-  display: flex;
-  justify-content: space-between;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr 1fr;
 `;

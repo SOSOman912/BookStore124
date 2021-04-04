@@ -28,6 +28,7 @@ class App extends React.Component {
                                                                 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
+        console.log('Get userID, starting fetching')
         const userRef = await createUserProfileDocument(userAuth).then(response => 
           axios.get('/login', {
             params: {

@@ -8,17 +8,17 @@ import { selectSearchingField , selectCurrentPage} from '../../redux/Filtering/F
 import CollectionSelector from  '../collection-selector/collection-selector.component.jsx'
 
 const CollectionFilterOverview = ({Collections,NameFilter,CurrentPage}) => {
-	const CollectionsToShow = Collections.filter(item => item.product_name.toLowerCase().includes(NameFilter.toLowerCase()));
+	const CollectionsToShow = Collections.filter(item => item.title.toLowerCase().includes(NameFilter.toLowerCase()));
 	return(
 		<CollectionFilteroverview>
 			<CollectionItemContainer>
 				{	NameFilter ?
 					CollectionsToShow.filter((item, idx) => idx >= 9*(CurrentPage-1) && idx < 9*CurrentPage).map((item) => (
-						<CollectionItem key={item.product_id} item = {item} />
+						<CollectionItem key={item.id} item = {item} />
 						))
 					:
 					CollectionsToShow.filter((item, idx) => idx >= 9*(CurrentPage-1) && idx < 9*CurrentPage).map((item) => (
-						<CollectionItem key={item.product_id} item = {item} />
+						<CollectionItem key={item.id} item = {item} />
 						))
 				}
 			</CollectionItemContainer>

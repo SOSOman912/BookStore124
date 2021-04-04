@@ -3,12 +3,12 @@ import axios from 'axios';
 export const addItemToCart = (state,cartItemToAdd) => {
 	const {cartItems, currentUser } = state;
 	const existingCartItem = cartItems.find(
-		cartItem => cartItem.product_id === cartItemToAdd.product_id
+		cartItem => cartItem.id === cartItemToAdd.id
 		);
 
 	if (existingCartItem) {
 	const newCartList1 = cartItems.map(cartItem =>
-			cartItem.product_id === cartItemToAdd.product_id
+			cartItem.id === cartItemToAdd.id
 				? {...cartItem, quantity: cartItem.quantity + 1}
 				: cartItem　
 			)
@@ -31,11 +31,11 @@ export const addItemToCart = (state,cartItemToAdd) => {
 export const removeItemFromCart = (state, cartItemToRemove) => {
 	const {cartItems, currentUser } = state;
 	const existingCartItem = cartItems.find(
-		cartItem => cartItem.product_id === cartItemToRemove.product_id
+		cartItem => cartItem.id === cartItemToRemove.id
 		);
 
 	if(existingCartItem.quantity === 1) {
-		const newCartlist3 = cartItems.filter(cartItem => cartItem.product_id !== cartItemToRemove.product_id);
+		const newCartlist3 = cartItems.filter(cartItem => cartItem.id !== cartItemToRemove.id);
 	axios.post('/updatecartlist', {
 		cartlist: newCartlist3,
 		users:currentUser
@@ -45,7 +45,7 @@ export const removeItemFromCart = (state, cartItemToRemove) => {
 
 	const newCartlist4 = cartItems.map(
 		cartItem =>
-			cartItem.product_id === cartItemToRemove.product_id ?
+			cartItem.id === cartItemToRemove.id ?
 				{ ...cartItem, quantity: cartItem.quantity - 1}
 				: cartItem
 			);
@@ -60,7 +60,7 @@ export const clearItemFromCart = (state, cartItemToClear) => {
 	const { cartItems, currentUser } = state;
 	console.log(state);
 	const newCartlist5 = state.cartItems.filter(item => 
-		item.product_id !== cartItemToClear.product_id
+		item.id !== cartItemToClear.id
 		)
 	axios.post('/updatecartlist', {
 		cartlist: newCartlist5,

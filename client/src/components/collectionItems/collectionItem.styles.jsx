@@ -25,7 +25,8 @@ export const CollectionItemWrap = styled.div`
 	height: 280px;
 	align-items:center;
 	position:relative;
-	margin-bottom: 10px;
+	margin-bottom: 50px;
+	margin-top:10px;
 
 	&:hover {
 		.image {
@@ -39,8 +40,8 @@ export const CollectionItemWrap = styled.div`
 ` 
 
 export const ImageAndCustomButtonWrapper = styled.div`
-	width:275px;
-	height:198px;
+	width:168px;
+	height:240px;
 	position:relative;
 	margin-bottom:5px;
 `
@@ -73,14 +74,20 @@ export const CustomButtonWrap = styled(CustomButton)`
 `
 
 export const CollectionFooter = styled.div`
+	margin-top:5px;
 	width: 100%;
 	display:flex;
 	flex-direction: column;
 	font-size: 18px;
+
+	.author {
+		color:green;
+	}
 `
 
 export const Name = styled.span`
-	width: 90%;
+	width: 100%;
+	text-align:center;
 `
 
 export const Price = styled.span`

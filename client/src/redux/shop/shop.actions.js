@@ -1,6 +1,6 @@
 import shopActionType from './shop.types'
 
-import fetchingDataFromServer from '../../pages/shop/shopData.fetching.js';
+import {fetchingDataFromServerforbasicUse,fetchingDataFromServer} from '../../pages/shop/shopData.fetching.js';
 
 export const addElaboratedItem = (item) => ({
 	type: shopActionType.ADD_ELABORATED_ITEM,
@@ -33,9 +33,11 @@ export const fetchCollectionsStartAsync = () => {
 	return dispatch => {
 		try {
 		dispatch(fetchCollectionsStart());
-		const collectionsMap = fetchingDataFromServer()
+		const Basicdata = fetchingDataFromServerforbasicUse()
 		.then((data) => dispatch(fetchCollectionsSuccess(data))
 		);
+		const Fulldata = fetchingDataFromServer()
+		.then((data) => dispatch(fetchCollectionsSuccess(data)))
 		} catch (error) {
 			dispatch(fetchCollectionsFailure(error.message));
 		} 
