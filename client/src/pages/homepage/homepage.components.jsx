@@ -3,18 +3,21 @@ import { connect } from 'react-redux';
 import { selectCollectionForPreview } from '../../redux/shop/shop.selectors.js';
 import { createStructuredSelector } from 'reselect';
 import CollectionsOverview from '../../components/collections-overview/collections-overview.components.jsx'
+import CollaborativeFilterPreview from '../../components/collaborative-filter-preview/collaborative-filter-preview.component'
 
 import { HomePageContainer,
 		 FirstSection,
-		 PosterContainer
+		 PosterContainer,
+		 SecondSection
  							} from './homepage.styles';
 
 const Homepage = ({Collections}) => {
 	return(
 	<HomePageContainer>
-		<FirstSection>
+		<SecondSection>
 			 <PosterContainer/>
-		</FirstSection>
+		</SecondSection>
+		<CollaborativeFilterPreview />
 		<CollectionsOverview  />
 	</HomePageContainer>
 		)

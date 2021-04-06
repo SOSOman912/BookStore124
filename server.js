@@ -6,6 +6,8 @@ const session = require('cookie-session');
 const {WebhookClient , Card, Suggestion} = require('dialogflow-fulfillment');
 const { Pool, Client } = require("pg");
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const collaborativeFilter = require('./collaborative_filtering/script.js')
+const fs = require('fs');
 
 
 const app = express();
@@ -18,7 +20,7 @@ const pool = new Pool({
     }
   });
 const UploadingDataToPostgreSQL = async(data) => {
-  const query = `INSERT INTO customerinformation (user_id, username, email)VALUES('${data.user_id}','${data.username}','${data.email}')`;
+  const query = `INSERT INTO customerinformation (user_id, username, email, cart_list, created_on)VALUES('${data.user_id}','${data.username}','${data.email}','${data.cart_list}','${data.created_on}')`;
   try {
     const client = await pool.connect();
       client.query(query);
@@ -49,30 +51,65 @@ const GetcustomerInformation = async(data) => {
   }
 }
 
-const RetrievingDatasFromPostgreSQLforBasicfunction = async() => {
-    const query = `SELECT * FROM booksinformation WHERE id < 100` ;
-  try {
-    
-    const client = await pool.connect();
-    const res = await client.query(query);
-    return res.rows;
-
-  } catch (err) {
-    console.log(err);
+const Login = async(userid) => {
+  if(userid == null) {
+    return [];
   }
+  console.log('Get userID, starting fetching')
+  var ProductData = RetrievingDatasFromPostgreSQL();
+  var customerdata = await GetcustomerInformation(userid);
+
+  app.set('updatedCartlist',customerdata[0].cart_list);
+
+  if(customerdata[0].cart_list) { 
+    var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
+      for (var i = 0; i< ProductData.length; i++) {
+        if (cartItem.product_id == ProductData[i].id) {
+          return {...ProductData[i], quantity: cartItem.quantity};
+        }}})}
+    else {
+      var TranformingCartList = [];
+    }
+
+  const hi = collaborativeFilter.ratingsdataset;
+
+  console.log('hi',hi);
+
+  var recommendationList = collaborativeFilter.recomendation_eng('1735');
+
+  console.log('recommendationList',recommendationList);
+  console.log('fetching finish, returning data');
+  
+
+  const ResData = {
+    id: customerdata[0].id,
+    user_id: customerdata[0].user_id,
+    username: customerdata[0].username,
+    email: customerdata[0].email,
+    cart_list: TranformingCartList,
+    recommendationList: recommendationList[1]
+  }
+
+  return ResData;
 }
 
-const RetrievingDatasFromPostgreSQL = async() => {
-    const query = `SELECT * FROM booksinformation` ;
-  try {
-    const client = await pool.connect();
-    const res = await client.query(query);
-    app.set("booksinformation",res.rows);
-    return res.rows;
+// const RetrievingDatasFromPostgreSQLforBasicfunction = async() => {
+//     const query = `SELECT * FROM booksinformation WHERE id < 100` ;
+//   try {
+    
+//     const client = await pool.connect();
+//     const res = await client.query(query);
+//     return res.rows;
 
-  } catch (err) {
-    console.log(err);
-  }
+//   } catch (err) {
+//     console.log(err);
+//   }
+// }
+
+const RetrievingDatasFromPostgreSQL = async() => {
+    let rawdata = fs.readFileSync('./books.json');
+    let dataset = JSON.parse(rawdata);
+    return dataset;
 }
 
 const CheckIfCustomerExisted = async(data) => {
@@ -132,6 +169,8 @@ app.post('/payment', (req, res) => {
     amount: req.body.amount,
     currency: 'usd'
   };
+
+  console.log(body);
 
   stripe.charges.create(body, (stripeErr, stripeRes) => {
     if (stripeErr) {
@@ -355,7 +394,7 @@ const dialogflowFulfillment = async(request, response) => {
 
       const snapshot = 
       {
-        product_id:array4[number].product_id,
+        product_id:array4[number].id,
         quantity:1
       }
       console.log("Item to added to database with chatbot:",snapshot)
@@ -363,7 +402,6 @@ const dialogflowFulfillment = async(request, response) => {
       console.log("CurrentCartListState:",Origincartlist);
       var AddedToDatabaseWithChatbot = Origincartlist.push(snapshot);
       app.set('updatedCartlist',AddedToDatabaseWithChatbot);      
-      console.log(Origincartlist);
       var currentUser = app.get('currentUser');
       const itemlist = JSON.stringify(Origincartlist);
       AddingShoesToCartList(currentUser[0],itemlist);
@@ -392,14 +430,14 @@ app.get('/getData', async(req, res) => {
 })
 
 app.post('/updatecartlist', async(req,res) => {
+    console.log(req.body);
     const snapshot = req.body.cartlist.map(item => (
           {
-            product_id: item.product_id,
+            product_id: item.id,
             quantity: item.quantity
           }
         ));
     const itemlist = JSON.stringify(snapshot);
-    console.log(snapshot);
     app.set('updatedCartlist',snapshot);
     AddingShoesToCartList(req.body.users,itemlist);
 })
@@ -409,38 +447,53 @@ app.post('/userDocumentUpload', (request, response) => {
 });
 
 app.get('/login', async (request, response) => {
-  var ProductData = app.get("booksinformation");
-  var customerdata = await GetcustomerInformation(request.query.user_id);
+  const userid = request.query.user_id;
+  console.log("Starting login function:",userid);
 
-  app.set('currentUser',customerdata);
-  console.log(customerdata[0].cart_list);
-  app.set('updatedCartlist',customerdata[0].cart_list);
+  if(userid == null) {
+    return [];
+  }
+  console.log('Get userID, starting fetching')
+  var ProductData = await RetrievingDatasFromPostgreSQL();
+  var customerdata = await GetcustomerInformation(userid);
 
-  if(customerdata[0].cart_list) { 
+  var recommendationList = collaborativeFilter.recomendation_eng('1735');
+  if(!customerdata[0].cart_list == null) { 
     var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
       for (var i = 0; i< ProductData.length; i++) {
-        if (cartItem.product_id == ProductData[i].product_id) {
+        if (cartItem.product_id == ProductData[i].id) {
           return {...ProductData[i], quantity: cartItem.quantity};
         }}})}
     else {
       var TranformingCartList = [];
     }
+
+  var TransformingRecommendationList = recommendationList[1].map(recommendationItem => {
+    for ( var i = 0; i< ProductData.length; i++ ) {
+      if (recommendationItem == ProductData[i].id) {
+        return {...ProductData[i]}
+      }
+    }
+  })
+
+  console.log('fetching finish, returning data');
   
 
   const ResData = {
+    id: customerdata[0].id,
     user_id: customerdata[0].user_id,
     username: customerdata[0].username,
     email: customerdata[0].email,
-    cart_list: TranformingCartList
+    cart_list: TranformingCartList,
+    recommendationList: TransformingRecommendationList  
   }
-
-
 
   response.send(ResData);
 });
 
 app.get('/checkifexist', async (request,response) => {
   var ResData = await CheckIfCustomerExisted(request.query.user_id);
+  console.log(ResData);
 
   response.send(ResData);
 

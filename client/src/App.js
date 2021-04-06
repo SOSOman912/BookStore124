@@ -25,10 +25,9 @@ class App extends React.Component {
   componentDidMount() {
     const { setCurrentUser,fetchCollectionsStartAsync } = this.props;
     fetchCollectionsStartAsync();
-                                                                
+
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) {
-        console.log('Get userID, starting fetching')
         const userRef = await createUserProfileDocument(userAuth).then(response => 
           axios.get('/login', {
             params: {
@@ -39,6 +38,8 @@ class App extends React.Component {
           setCurrentUser(userAuth);
       }
     });
+
+
   }
 
   componentWillUnmount() {

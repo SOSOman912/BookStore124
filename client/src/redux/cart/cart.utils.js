@@ -2,6 +2,8 @@ import axios from 'axios';
 
 export const addItemToCart = (state,cartItemToAdd) => {
 	const {cartItems, currentUser } = state;
+	console.log("cartItems",state);
+	console.log("cartItemToAdd",cartItemToAdd);
 	const existingCartItem = cartItems.find(
 		cartItem => cartItem.id === cartItemToAdd.id
 		);
@@ -12,12 +14,10 @@ export const addItemToCart = (state,cartItemToAdd) => {
 				? {...cartItem, quantity: cartItem.quantity + 1}
 				: cartItem　
 			)
-	console.log(newCartList1);
 	axios.post('/updatecartlist', {
 		cartlist: newCartList1,
 		users:currentUser
 	})
-
 	return newCartList1;
 	}
 	const newCartList2 = [...cartItems, { ...cartItemToAdd, quantity: 1}];

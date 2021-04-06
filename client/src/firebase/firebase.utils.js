@@ -54,6 +54,7 @@ const config =
         user_id: userAuth.uid,
         username: additionalData,
         email: userAuth.email,
+        cart_list:null,
         created_on: new Date()
       }
     }).then(response => {

@@ -7,7 +7,8 @@ const INITIAL_STATE = {
 	ElaboratedItems: '',
 	hidden: true,
 	PosterToshow: 1,
-	Categoryhidden: true
+	Categoryhidden: true,
+	
 }
 
 const shopReducer = ( state = INITIAL_STATE, action) => {

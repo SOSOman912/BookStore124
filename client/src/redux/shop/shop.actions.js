@@ -33,11 +33,9 @@ export const fetchCollectionsStartAsync = () => {
 	return dispatch => {
 		try {
 		dispatch(fetchCollectionsStart());
-		const Basicdata = fetchingDataFromServerforbasicUse()
+		const Basicdata = fetchingDataFromServer()
 		.then((data) => dispatch(fetchCollectionsSuccess(data))
 		);
-		const Fulldata = fetchingDataFromServer()
-		.then((data) => dispatch(fetchCollectionsSuccess(data)))
 		} catch (error) {
 			dispatch(fetchCollectionsFailure(error.message));
 		} 
@@ -51,5 +49,9 @@ export const changePosterToShow = (number) => ({
 
 export const togglecategoryhidden = () => ({
 	type:shopActionType.TOGGLE_CATEGORY_HIDDEN,
+})
+
+export const getrecommendationItems = () => ({
+	type:shopActionType.GET_RECOMMENDATION_ITEMS,
 })
 
