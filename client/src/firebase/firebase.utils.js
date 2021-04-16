@@ -15,6 +15,16 @@ const config =
   };
 
   firebase.initializeApp(config);
+
+  const GenerateToken = function () {
+  const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let token = '';
+  for (let i = 0; i < 25; i++) {
+    token += characters[Math.floor(Math.random() * characters.length)];
+  }
+  return token;
+} 
+
   export const createUserProfileDocument = async (userAuth, additionalData) => {
   		 if (!userAuth) return;
 
@@ -25,6 +35,8 @@ const config =
 
         const existed = await CheckIfUserExist(uid);
 
+        console.log(existed);
+
         if (!existed.data[0].exists) {
             try{
             await createUserProfileInDatabase(userAuth,displayName);
@@ -32,7 +44,6 @@ const config =
             console.log(err);
           }
         }
-
   		 return userAuth;
   };
 
@@ -47,6 +58,18 @@ const config =
   export const createUserProfileInDatabase = async (userAuth, additionalData) => {
     if (!userAuth) return;
 
+    let token = GenerateToken();
+
+    axios({
+      url: '/SendConformationEmail',
+      method: 'post',
+      data: {
+        email: userAuth.email,
+        name: additionalData,
+        token: token,
+      }
+    })
+
     axios({
       url: '/userDocumentUpload',
       method: 'post',
@@ -55,7 +78,9 @@ const config =
         username: additionalData,
         email: userAuth.email,
         cart_list:null,
-        created_on: new Date()
+        status:"Pending",
+        created_on: new Date(),
+        confirmationcode: token,
       }
     }).then(response => {
       console.log(response);

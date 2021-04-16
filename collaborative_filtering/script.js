@@ -6,22 +6,6 @@ ratingsdataset = function() {
 	return ratings;
 }
 
-
-// var dataSet = {};
-// for (var i = 0; i < books.length; i++) {
-// 	dataSet[books[i].user_id] = 
-// 		{	
-// 			...dataSet[books[i].user_id],	
-// 			[books[i].book_id]: books[i].rating
-// 		}
-// }
-
-// let data = JSON.stringify(dataSet);
-// fs.writeFileSync('data.json',data);
-
-
-
-
 var pearson_correlation = function(dataset,p1,p2) {
 	var existp1p2 = {};
 

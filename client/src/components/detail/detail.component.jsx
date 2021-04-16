@@ -11,7 +11,7 @@ import { selectElaboratedItem } from '../../redux/shop/shop.selectors'
 import { Price,Title, DetailWrapper, Overlay, Colorbox, Boxwrapper,  BoxContent, ContentLeft, Image, ContentRight } from './detail.styles'
 
 const DetailViewer = ({ElaboratedItem, removeElaboratedItem}) => {
-	const { imageUrl, name, price, descrption } =  ElaboratedItem;	
+	const { image_url, title, sale_price } =  ElaboratedItem;	
 	console.log(ElaboratedItem);
 	return(
 	<DetailWrapper>	
@@ -22,14 +22,13 @@ const DetailViewer = ({ElaboratedItem, removeElaboratedItem}) => {
 						<ContentLeft>
 							<Image 
 							style = {{
-								backgroundImage:`url(${imageUrl})`
+								backgroundImage:`url(${image_url})`
 							}}
 							/>
 						</ContentLeft>
 						<ContentRight>
-							<Title>{name}</Title>
-							<Price>Price:${price}</Price>
-							<div>{descrption}</div>
+							<Title>{title}</Title>
+							<Price>Price:${sale_price}</Price>
 						</ContentRight>
 					</BoxContent>
 				</Boxwrapper>

@@ -2,12 +2,14 @@ const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
-const session = require('cookie-session');
+const session = require('express-session');
 const {WebhookClient , Card, Suggestion} = require('dialogflow-fulfillment');
 const { Pool, Client } = require("pg");
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const collaborativeFilter = require('./collaborative_filtering/script.js')
+
+const collaborativeFilter = require('./collaborative_filtering/script.js');
 const fs = require('fs');
+const SendingConfirmationEmail = require('./SendingEmail/ConfirmationEmail.js');
 
 
 const app = express();
@@ -19,8 +21,17 @@ const pool = new Pool({
       rejectUnauthorized:false
     }
   });
+
+app.use(session({
+  secret: 'Igotoschoolbybus',
+  cookie: { maxAge: 60 * 1000},
+  resave: true,
+  saveUninitialized: true
+}));
+
+
 const UploadingDataToPostgreSQL = async(data) => {
-  const query = `INSERT INTO customerinformation (user_id, username, email, cart_list, created_on)VALUES('${data.user_id}','${data.username}','${data.email}','${data.cart_list}','${data.created_on}')`;
+  const query = `INSERT INTO customerinformation (user_id, username, email, cart_list, created_on, status, confirmationcode)VALUES('${data.user_id}','${data.username}','${data.email}','${data.cart_list}','${data.created_on}','${data.status}','${data.confirmationcode}')`;
   try {
     const client = await pool.connect();
       client.query(query);
@@ -49,48 +60,6 @@ const GetcustomerInformation = async(data) => {
   } catch (err) {
     console.log(err);
   }
-}
-
-const Login = async(userid) => {
-  if(userid == null) {
-    return [];
-  }
-  console.log('Get userID, starting fetching')
-  var ProductData = RetrievingDatasFromPostgreSQL();
-  var customerdata = await GetcustomerInformation(userid);
-
-  app.set('updatedCartlist',customerdata[0].cart_list);
-
-  if(customerdata[0].cart_list) { 
-    var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
-      for (var i = 0; i< ProductData.length; i++) {
-        if (cartItem.product_id == ProductData[i].id) {
-          return {...ProductData[i], quantity: cartItem.quantity};
-        }}})}
-    else {
-      var TranformingCartList = [];
-    }
-
-  const hi = collaborativeFilter.ratingsdataset;
-
-  console.log('hi',hi);
-
-  var recommendationList = collaborativeFilter.recomendation_eng('1735');
-
-  console.log('recommendationList',recommendationList);
-  console.log('fetching finish, returning data');
-  
-
-  const ResData = {
-    id: customerdata[0].id,
-    user_id: customerdata[0].user_id,
-    username: customerdata[0].username,
-    email: customerdata[0].email,
-    cart_list: TranformingCartList,
-    recommendationList: recommendationList[1]
-  }
-
-  return ResData;
 }
 
 // const RetrievingDatasFromPostgreSQLforBasicfunction = async() => {
@@ -122,6 +91,10 @@ const CheckIfCustomerExisted = async(data) => {
     console.log(err);
   }
 }
+
+// const ChangeCustomerstatus = async(data) => {
+//   const query = `UPDATE customerinformation SET status = 'Active' WHERE confirmationcode = '${}'`
+// }
 
 const AddingShoesToCartList = async(data,itemlist) => {
   const query = `UPDATE customerinformation SET cart_list = '${itemlist}' WHERE user_id = '${data.user_id}'`
@@ -203,229 +176,272 @@ const dialogflowFulfillment = async(request, response) => {
     }
 
     const Lookforproduct = (agent) => {
-      const content = request.body;
-      const requirement = {
-          shoestype: content.queryResult.parameters.shoestype,
-          SportType: content.queryResult.parameters.SportType,
-          Shoesbrand: content.queryResult.parameters.Shoesbrand,
-          gender: content.queryResult.parameters.gender
-      }
-      app.set("ProductRequirement",requirement);
-
-      var possibleResponse = [
-      'Of course! Is there any or more requirement?',
-      `May I know is there any or more requirement on the ${requirement.shoestype} ?`
-      ]
-
-      var pick = Math.floor (Math.random() * possibleResponse.length );
-
-      var response = possibleResponse[pick];
       
-      agent.add(response);
+      agent.add('Sure');
+      agent.add('Do you want me to recommend a random book to you or recommend base on your requirement?');
+      agent.add(new Suggestion('Just recommend me random book'));
+      agent.add(new Suggestion('Please provide books base on my requirement'));
     }
 
-    const NoForLookforproduct = async (agent) => {
-        const content = request.body.queryResult.outputContexts[0].parameters;
-        var number = 0;
-        app.set("number",number);
-        var requirement = app.get("ProductRequirement");
+    const RandomBook = (agent) => {
+      var productdata = app.get("booksinformation");
 
-      const productdata = app.get("booksinformation");
-      if (requirement.shoestype != null) {
-        var array1 = productdata.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array1 = productdata;
+      function compare (a,b) {
+        if (a.average_rating < b.average_rating) {
+          return 1;
+        }
+        if( a.average_rating > b.average_rating) {
+          return -1;
+        }
+        return;
       }
 
-      if (requirement.SportType != null) {
-        var array2 = array1.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.SportType) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array2 = array1;
-      }
+      var Sortedproductdata = productdata.sort(compare);
 
-      if (requirement.Shoesbrand != null) {
-        var array3 = array2.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.Shoesbrand) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array3 = array2;
-      }
+      // for (var i = 0 ; i < productdata.length; i++) {
+      //   if (productdata[i].average_rating > product.average_rating) {
+      //     product = productdata[i];
+      //   }
+      // }
+      app.set("booksinformation",productdata);
 
-      if (requirement.Shoesbrand != null) {
-        var array4 = array3.filter(data => {
-          if (data.gender.toLowerCase().includes(requirement.gender) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array4 = array3;
-      }
+      app.set("RandomBookNumber",0);
 
-      var Itemtoshow = number;
-      var Imagetoshow = array4[Itemtoshow].images.split(',');
+      app.set("RandomBookList",Sortedproductdata)
+
+      var product = Sortedproductdata[0];
 
       agent.add(new Card({
-        title: array4[Itemtoshow].product_name,
-        imageUrl: Imagetoshow[Itemtoshow],
-        text: 'This is the body text of a card'
+        title: product.title,
+        imageUrl: product.small_image_url,
+        text: `Author:${product.authors}`
       }));
-      
-      agent.add(new Suggestion(`Please help me to add this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype} to my cart list`));
-      agent.add(new Suggestion(`I don't like this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype}, Can you suggest Me another one?`));
-      };
+      agent.add(`This product is being introduced to you since it has the highest average_rating of ${product.average_rating}`);
+      agent.add(new Suggestion('Add this book to my cartlist please'));
+      agent.add(new Suggestion('Show me another book please'));
+    }
 
-      const SuggestAnotherProduct = async (agent) => {  
+    const ShowAnotherRandomBook = (agent) => {
 
+      var number = app.get("RandomBookNumber");
+
+      const Booklist = app.get("RandomBookList");
+
+      var number = number + 1;
+
+      app.set("RandomBookNumber",number);
+
+      app.set("RandomBookList",Booklist);
+
+      var product = Booklist[number];
+
+      agent.add(new Card({
+        title: product.title,
+        imageUrl: product.small_image_url,
+        text: `Author:${product.authors}`
+      }));
+      agent.add(`This product is being introduced to you since it has the highest average_rating of ${product.average_rating}`);
+      agent.add(new Suggestion('Add this book to my cartlist please'));
+      agent.add(new Suggestion('Show me another book please'));
+    }
+
+    const ShowAnotherSpecificBook = (agent) => {
+
+      var number = app.get("specificRequirementNumber");
+
+      const list = app.get("specificbooklist");
+
+      var number = number + 1;
+
+      app.set("specificRequirementNumber",number);
+
+      app.set("specificbooklist",list);
+
+      var product = list[number];
+
+      var listlength = list.length;
+
+      agent.add(new Card({
+        title: product.title,
+        imageUrl: product.small_image_url,
+        text: `Author:${product.authors}`
+      }));
+    agent.add(`This books is the ${number + 1} books that meet your requirement, there are total ${listlength} books in the list`);
+    agent.add(new Suggestion('This is the book that I want to find!!!!'));
+    agent.add(new Suggestion('This is not the book I want, show me another book please'));
+
+    }
+
+
+      const AddingBooksToCartListWithChatBot = async(agent) => {
       const content = request.body.queryResult.outputContexts[0].parameters;
-      var requirement = app.get("ProductRequirement");
-      var number = app.get("number");
-      number = number + 1;
-      app.set("number",number);
 
-      const productdata = app.get("booksinformation");
-      if (requirement.shoestype != null) {
-        var array1 = productdata.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array1 = productdata;
-      }
+      const Booklist = app.get("RandomBookList");
 
-      if (requirement.SportType != null) {
-        var array2 = array1.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.SportType) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array2 = array1;
-      }
-
-      if (requirement.Shoesbrand != null) {
-        var array3 = array2.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.Shoesbrand) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array3 = array2;
-      }
-
-      if (requirement.Shoesbrand != null) {
-        var array4 = array3.filter(data => {
-          if (data.gender.toLowerCase().includes(requirement.gender) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array4 = array3;
-      }
-
-      var Itemtoshow = number;
-      var Imagetoshow = array4[Itemtoshow].images.split(',');
-
-      agent.add(new Card({
-        title: array4[Itemtoshow].product_name,
-        imageUrl: Imagetoshow[Itemtoshow],
-        text: 'This is the body text of a card'
-      }));
-      agent.add(new Suggestion(`Please help me to add this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype} to my cart list`));
-      agent.add(new Suggestion(`I don't like this ${requirement.gender? requirement.gender : ''} ${requirement.Shoesbrand? requirement.Shoesbrand : ''} ${requirement.SportType? requirement.SportType : ''} ${requirement.shoestype}, Can you suggest Me another one?`));
-      };
-
-      const AddingShoesToCartListWithChatBot = async(agent) => {
-        const content = request.body.queryResult.outputContexts[0].parameters;
-      var requirement = app.get("ProductRequirement");
-
-      const productdata = app.get("booksinformation");
-      if (requirement.shoestype != null) {
-        var array1 = productdata.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.shoestype) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array1 = productdata;
-      }
-
-      if (requirement.SportType != null) {
-        var array2 = array1.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.SportType) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array2 = array1;
-      }
-
-      if (requirement.Shoesbrand != null) {
-        var array3 = array2.filter(data => {
-          if (data.product_name.toLowerCase().includes(requirement.Shoesbrand) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array3 = array2;
-      }
-
-      if (requirement.Shoesbrand != null) {
-        var array4 = array3.filter(data => {
-          if (data.gender.toLowerCase().includes(requirement.gender) == true) {
-            return data;
-          }
-        })
-      } else {
-        var array4 = array3;
-      }
+      var number = app.get("RandomBookNumber");
 
       var Itemtoshow = number;
 
       const snapshot = 
       {
-        product_id:array4[number].id,
+        product_id:Booklist[Itemtoshow].id,
         quantity:1
       }
+
       console.log("Item to added to database with chatbot:",snapshot)
       var Origincartlist = app.get('updatedCartlist');
       console.log("CurrentCartListState:",Origincartlist);
       var AddedToDatabaseWithChatbot = Origincartlist.push(snapshot);
       app.set('updatedCartlist',AddedToDatabaseWithChatbot);      
       var currentUser = app.get('currentUser');
+      console.log(currentUser);
       const itemlist = JSON.stringify(Origincartlist);
       AddingShoesToCartList(currentUser[0],itemlist);
+      app.set('currentUser',currentUser);
 
       agent.add("Your shoes have already been added into the cartlist, before you pay your bill, please reflesh the pages first.");
       }
 
+      const AddingSpecificBooksToCartListWithChatBot = async(agent) => {
+
+      const Booklist = app.get("specificbooklist");
+
+      var number = app.get("specificRequirementNumber");
+
+      var Itemtoshow = number;
+
+      const snapshot = 
+      {
+        product_id:Booklist[Itemtoshow].id,
+        quantity:1
+      }
+
+      console.log("Item to added to database with chatbot:",snapshot)
+      var Origincartlist = app.get('updatedCartlist');
+      console.log("CurrentCartListState:",Origincartlist);
+      var AddedToDatabaseWithChatbot = Origincartlist.push(snapshot);
+      app.set('updatedCartlist',AddedToDatabaseWithChatbot);      
+      var currentUser = app.get('currentUser');
+      console.log(currentUser);
+      const itemlist = JSON.stringify(Origincartlist);
+      AddingShoesToCartList(currentUser[0],itemlist);
+      app.set('currentUser',currentUser);
+
+      agent.add("Your shoes have already been added into the cartlist, before you pay your bill, please reflesh the pages first.");
+      }
+
+      const SpecificBook = async(agent) => {
+      agent.add("To receive recommendation from a book, You need to provide data for me to analysis");
+      agent.add("Can you provide the bookid of the book you want to find?");
+      agent.add("If yes, please enter the bookid, otherwise please press the button");
+      agent.add(new Suggestion("I don't have the bookid"));
+      }
+
+      const ReceiveId = async(agent) => {
+      if (request.body.queryResult.parameters.id) {
+        var Requirement = {
+        id:request.body.queryResult.parameters.id
+        }
+      } else {
+        var Requirement = {
+          id:null
+        }
+      }
+      
+    
+      app.set("Requirement",Requirement);
+
+      agent.add("Can you provide the isbn code of the book you want to find?");
+      agent.add("If yes, please enter the isbn code, otherwise please press the button");
+      agent.add(new Suggestion("I don't have the isbn code"));
+      }
+
+      const ReceiveIsbn = async(agent) => {
+      var Requirement = app.get("Requirement");
+      if (request.body.queryResult.parameters.isbn) {
+        var Requirement = {
+        ...Requirement,
+        isbn:request.body.queryResult.parameters.isbn
+        }
+      } else {
+        var Requirement = {
+        ...Requirement,
+        isbn:null
+        }
+      }
+      
+      app.set("Requirement",Requirement);
+
+      agent.add("Can you provide the authors of the book you want to find?");
+      agent.add("If yes, please enter the name of the authors, otherwise please press the button");
+      agent.add(new Suggestion("I don't have the specific authors"));
+    }
+
+    const ReceiveAuthors = async(agent) => {
+      var Requirement = app.get("Requirement");
+      var booksinformation = app.get("booksinformation");
+      if (request.body.queryResult.parameters.authors) {
+        var Requirement = {
+        ...Requirement,
+        authors:request.body.queryResult.parameters.authors
+        }
+      } else {
+        var Requirement = {
+        ...Requirement,
+        authors:null
+        }
+      }
+
+    console.log(Requirement);
+
+
+    const list = booksinformation.filter(book => Requirement.id != null ? book.id === Requirement.id : book).filter(book => Requirement.isbn != null ? book.isbn == Requirement.isbn : book).filter(book => Requirement.authors != null ? book.authors == Requirement.authors.name : book );
+
+    app.set("booksinformation",booksinformation);
+
+    app.set("specificbooklist", list);
+
+    var number = 0;
+
+    var product = list[number];
+
+    var listlength = list.length;
+
+    app.set("specificRequirementNumber",number);
+
+    agent.add(new Card({
+      title: product.title,
+      imageUrl: product.small_image_url,
+      text: `Author:${product.authors}`
+    }));
+    agent.add(`This books is the ${number + 1} books that meet your requirement, there are total ${listlength} books in the list`);
+    agent.add(new Suggestion('This is the book that I want to find!!!!'));
+    agent.add(new Suggestion('This is not the book I want, show me another book please'));
+
+    }
+
+
     let intentMap = new Map();
     intentMap.set("Welcome", Welcome);
     intentMap.set("Lookforproduct", Lookforproduct);
-    intentMap.set("Lookforproduct - no", NoForLookforproduct);
-    intentMap.set("Lookforproduct-no-Move to other shoes", SuggestAnotherProduct);
-    intentMap.set("Lookforproduct-no-additemtocart", AddingShoesToCartListWithChatBot );
+    intentMap.set("randombook", RandomBook);
+    intentMap.set("AnotherRandomBook",ShowAnotherRandomBook);
+    intentMap.set("AddBooksToCart", AddingBooksToCartListWithChatBot);
+    intentMap.set("SpecificBook", SpecificBook);
+    intentMap.set("SpecificBook - Receive id", ReceiveId);
+    intentMap.set("SpecificBook - Receive isbn", ReceiveIsbn);
+    intentMap.set("SpecificBook - Receive authors", ReceiveAuthors);
+    intentMap.set("SpecificBook - AddBookToCartlist", AddingSpecificBooksToCartListWithChatBot);
+    intentMap.set("AnotherSpecificBook",ShowAnotherSpecificBook);
+
+
     agent.handleRequest(intentMap)
   }
 
-app.get('/getDataForBasicUse', async(req, res) => {
-    var ResData = await RetrievingDatasFromPostgreSQLforBasicfunction();
-    res.send(ResData);  
-})
-
-app.get('/getData', async(req, res) => {
-    
+app.get('/getData', async(req, res) => { 
     var ResData = await RetrievingDatasFromPostgreSQL();
+    app.set("booksinformation",ResData);
+    req.session.BookData = ResData;
     res.send(ResData);  
 })
 
@@ -443,8 +459,16 @@ app.post('/updatecartlist', async(req,res) => {
 })
 
 app.post('/userDocumentUpload', (request, response) => {
-  UploadingDataToPostgreSQL(request.body);
+  UploadingDataToPostgreSQL(request.body);  
 });
+
+app.get("/confirm/:token", (request, response) => {
+  console.log(request.params);
+})
+
+app.post('/SendConformationEmail', (request, response) => {
+  SendingConfirmationEmail.sendConfirmationEmail(request.body);
+})
 
 app.get('/login', async (request, response) => {
   const userid = request.query.user_id;
@@ -456,6 +480,12 @@ app.get('/login', async (request, response) => {
   console.log('Get userID, starting fetching')
   var ProductData = await RetrievingDatasFromPostgreSQL();
   var customerdata = await GetcustomerInformation(userid);
+
+  if (customerdata[0].status != "Active") {
+    return response.status(401).send({
+      message: "Pending Account. Please Verify your Email First !"
+    })
+  }
 
   var recommendationList = collaborativeFilter.recomendation_eng('1735');
   if(!customerdata[0].cart_list == null) { 
@@ -476,9 +506,10 @@ app.get('/login', async (request, response) => {
     }
   })
 
+  app.set("currentUser",customerdata);
+  app.set("updatedCartlist",TranformingCartList);
   console.log('fetching finish, returning data');
   
-
   const ResData = {
     id: customerdata[0].id,
     user_id: customerdata[0].user_id,

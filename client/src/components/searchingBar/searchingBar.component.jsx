@@ -10,7 +10,7 @@ const SearchingBar = ({ChangeSearchField,SearchingBarHidden,ToggleSearchBarHidde
 		<SearchBarWrapper>
 			<FilteringItem>
 				<FilteringTitleWrapper onClick={ToggleSearchBarHidden}>
-					<FilteringTitle>Searching</FilteringTitle>
+					<FilteringTitle>Book Name</FilteringTitle>
 					<FilteringTitle>&#45;</FilteringTitle>
 				</FilteringTitleWrapper>
 				{	SearchingBarHidden ? null :

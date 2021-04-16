@@ -27,13 +27,17 @@ class App extends React.Component {
     fetchCollectionsStartAsync();
 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
-      if (userAuth) {
+      if (userAuth) { 
         const userRef = await createUserProfileDocument(userAuth).then(response => 
           axios.get('/login', {
             params: {
               user_id: response.uid
             }
-          }).then(response => setCurrentUser(response.data)));
+          })).then(response => setCurrentUser(response.data)).catch(error=> {
+         if (error.response.status == 401) {
+          console.log("Your account has not yet verifyed!");
+         } 
+        });
       } else {
           setCurrentUser(userAuth);
       }

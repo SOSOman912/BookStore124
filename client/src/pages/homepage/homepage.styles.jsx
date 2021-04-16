@@ -3,8 +3,8 @@ import Poster from '../../components/poster/poster.component.jsx'
 
 export const HomePageContainer = styled.div`
 	  background-color:#white;
-	  width:1525px;
-	  padding:0% 10% 0% 10%;
+	  width:100%;
+	  padding:0 20%;
 `
 
 export const FirstSection = styled.div`
@@ -14,7 +14,7 @@ export const FirstSection = styled.div`
 `
 
 export const SecondSection = styled.div`
-	width:100%;
+	width:1525px;
 	display:flex;
 	justify-content:center;
 `

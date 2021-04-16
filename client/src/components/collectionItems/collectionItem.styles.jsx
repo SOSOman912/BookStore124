@@ -19,7 +19,6 @@ const fadingIn = keyframes`
 
 export const CollectionItemWrap = styled.div`
 	background-color:white;
-	width:275px;
 	display:flex;
 	flex-direction: column;
 	height: 280px;

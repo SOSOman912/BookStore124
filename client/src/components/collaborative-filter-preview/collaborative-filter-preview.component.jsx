@@ -8,7 +8,7 @@ import {	CollaborativeFilterPreviewWrap,
 import CollectionItem from '../collectionItems/collectionItem.component.jsx';
 
 const CollaborativeFilterPreview = ({CurrentUser}) => {
-	const {recommendationList} = CurrentUser;
+	const { recommendationList } = CurrentUser;
 	return (
 		<CollaborativeFilterPreviewWrap>
 					<h2>WE GUESS YOU MAY LIKE THESE BOOK:</h2>

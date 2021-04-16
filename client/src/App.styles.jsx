@@ -5,7 +5,7 @@ import { ReactComponent as Arrow } from './assets/Antu_arrow-right.svg'
 import ChatBot from './components/chatBot/chatBot.components.jsx';
 
 export const ContentContainer = styled.div`
-	width:1525px;
+	width:100%;
 	background-color:white;
 	position:relative;
 `

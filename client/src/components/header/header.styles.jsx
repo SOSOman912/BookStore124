@@ -1,18 +1,19 @@
 import styled from 'styled-components';
 import { Link } from 'react-router-dom';
-import { ReactComponent as Logo  } from '../../assets/adidas-7.svg';
+import { ReactComponent as Logo  } from '../../assets/jarir-bookstore-vector-logo.svg';
 import { ReactComponent as DropDownIcon  } from '../../assets/Hamburger_icon_white.svg' 
 
 export const HeaderContainer = styled.div`
+    padding:0 2%;
 	background-color:#EDEDEC;
 	height: 100px;
 	width: 100%;
     border:none;
     display:flex;
+    justify-content:space-between;
 `
 
 export const LogoContainer = styled(Link)`
-    width:25%;
     height:100%%;
     display:flex;
     justify-content:center;
@@ -45,10 +46,7 @@ export const CategoryTitle = styled.h2`
 
 
 export const OptionsContainer = styled.div`
-    width: 1525px;
-    margin:0% 20%;
     display: flex;
-    justify-content:space-between;
 `
 
 export const OptionLink = styled(Link)`
@@ -60,7 +58,7 @@ export const OptionLink = styled(Link)`
 
 export const LOGO = styled(Logo)`
     width:350px;
-    height:80%;
+    height:300%;
 `
 
 export const DROPDOWNICON = styled(DropDownIcon)`
