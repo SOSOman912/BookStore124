@@ -6,6 +6,7 @@ const session = require('express-session');
 const {WebhookClient , Card, Suggestion} = require('dialogflow-fulfillment');
 const { Pool, Client } = require("pg");
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+require('dotenv').config();
 
 const collaborativeFilter = require('./collaborative_filtering/script.js');
 const fs = require('fs');
@@ -125,9 +126,7 @@ app.use(cors());
 
 // pool.on('error', (err, client) => {
 //   console.error('Error:',err);
-// })
 
-// if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 
 
 
