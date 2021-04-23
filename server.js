@@ -115,19 +115,19 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(cors());
 
-if (process.env.NODE_ENV === 'production') {
-  app.use(express.static(path.join(__dirname, 'client/build')));
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(express.static(path.join(__dirname, 'client/build')));
 
-  app.get('*', function(req, res) {
-    res.sendFile(path.join(__dirname, 'client/build', 'index.html'));
-  });
-}
+//   app.get('*', function(req, res) {
+//     res.sendFile(path.join(__dirname, 'client/public', 'index.html'));
+//   });
+// }
 
-pool.on('error', (err, client) => {
-  console.error('Error:',err);
-})
+// pool.on('error', (err, client) => {
+//   console.error('Error:',err);
+// })
 
-if (process.env.NODE_ENV !== 'production') require('dotenv').config();
+// if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 
 
 
