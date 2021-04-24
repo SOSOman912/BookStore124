@@ -14,14 +14,16 @@ export const addItemToCart = (state,cartItemToAdd) => {
 				? {...cartItem, quantity: cartItem.quantity + 1}
 				: cartItem　
 			)
-	axios.post('/updatecartlist', {
+	console.log("newCartList1:",newCartList1);
+	axios.post('/api/updatecartlist', {
 		cartlist: newCartList1,
 		users:currentUser
 	})
 	return newCartList1;
 	}
 	const newCartList2 = [...cartItems, { ...cartItemToAdd, quantity: 1}];
-	axios.post('/updatecartlist', {
+	console.log("newCartList2:",newCartList2);
+	axios.post('/api/updatecartlist', {
 		cartlist: newCartList2,
 		users:currentUser
 	})
@@ -36,7 +38,7 @@ export const removeItemFromCart = (state, cartItemToRemove) => {
 
 	if(existingCartItem.quantity === 1) {
 		const newCartlist3 = cartItems.filter(cartItem => cartItem.id !== cartItemToRemove.id);
-	axios.post('/updatecartlist', {
+	axios.post('/api/updatecartlist', {
 		cartlist: newCartlist3,
 		users:currentUser
 	})
@@ -49,7 +51,7 @@ export const removeItemFromCart = (state, cartItemToRemove) => {
 				{ ...cartItem, quantity: cartItem.quantity - 1}
 				: cartItem
 			);
-	axios.post('/updatecartlist', {
+	axios.post('/api/updatecartlist', {
 		cartlist: newCartlist4,
 		users:currentUser
 	})

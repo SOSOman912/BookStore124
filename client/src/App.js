@@ -13,7 +13,7 @@ import ShopPage from './pages/shop/shop.component';
 import CheckoutPage from './pages/checkout/checkout.component'
 import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
 import Header from './components/header/header.component';
-import { auth, createUserProfileDocument } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument, CheckIfUserExist } from './firebase/firebase.utils';
 import { setCurrentUser } from './redux/cart/cart.actions';
 import { selectCurrentUser } from './redux/cart/cart.selectors';
 import { fetchCollectionsStartAsync} from './redux/shop/shop.actions';
@@ -29,7 +29,7 @@ class App extends React.Component {
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) { 
         const userRef = await createUserProfileDocument(userAuth).then(response => 
-          axios.get('/login', {
+          axios.get('/api/login', {
             params: {
               user_id: response.uid
             }

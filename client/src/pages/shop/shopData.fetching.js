@@ -4,7 +4,7 @@ export const fetchingDataFromServerforbasicUse = async() => {
 	console.log("Start Fetching Data for Basic use");
 	
 	const makeGetRequest = async() => {
-		var res = await axios.get('/getDataForBasicUse');
+		var res = await axios.get('/api/getDataForBasicUse');
 		
 		let data = res.data;
 
@@ -19,7 +19,7 @@ export const fetchingDataFromServer = async() => {
 	console.log("Start Fetching Data");
 	
 	const makeGetRequest = async() => {
-		var res = await axios.get('/getData');
+		var res = await axios.get('/api/getData');
 		
 		let data = res.data;
 

@@ -37,21 +37,51 @@ const config =
 
         console.log(existed);
 
-        if (!existed.data[0].exists) {
-            try{
-            await createUserProfileInDatabase(userAuth,displayName);
-          } catch (err) {
-            console.log(err);
-          }
+        if (existed.data[0].exists == false) {
+           if (userAuth.emailVerified == true) {
+              try {
+                await createUserProfileInDatabaseVerfied(userAuth,displayName);
+              }catch (err) {
+                console.log(err);
+              }
+           } else {
+                try{
+                await createUserProfileInDatabase(userAuth,displayName);
+              } catch (err) {
+                console.log(err);
+              }
+           }
         }
   		 return userAuth;
   };
 
-  const CheckIfUserExist = (id) => {
-    return axios.get('/checkifexist' , {
+  export const CheckIfUserExist = (id) => {
+    return axios.get('/api/checkifexist' , {
       params: {
         user_id:id
       }
+    })
+  }
+
+   export const createUserProfileInDatabaseVerfied = async (userAuth, additionalData) => {
+    if (!userAuth) return;
+
+    let token = GenerateToken();
+
+    axios({
+      url: '/api/userDocumentUpload',
+      method: 'post',
+      data: {
+        user_id: userAuth.uid,
+        username: additionalData,
+        email: userAuth.email,
+        cart_list:null,
+        status:"Active",
+        created_on: new Date(),
+        confirmationcode: token,
+      }
+    }).then(response => {
+      console.log(response);
     })
   }
 
@@ -61,7 +91,7 @@ const config =
     let token = GenerateToken();
 
     axios({
-      url: '/SendConformationEmail',
+      url: '/api/SendConformationEmail',
       method: 'post',
       data: {
         email: userAuth.email,
@@ -71,7 +101,7 @@ const config =
     })
 
     axios({
-      url: '/userDocumentUpload',
+      url: '/api/userDocumentUpload',
       method: 'post',
       data: {
         user_id: userAuth.uid,

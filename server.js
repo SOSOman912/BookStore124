@@ -5,8 +5,9 @@ const path = require('path');
 const session = require('express-session');
 const {WebhookClient , Card, Suggestion} = require('dialogflow-fulfillment');
 const { Pool, Client } = require("pg");
+if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-require('dotenv').config();
+
 
 const collaborativeFilter = require('./collaborative_filtering/script.js');
 const fs = require('fs');
@@ -32,10 +33,11 @@ app.use(session({
 
 
 const UploadingDataToPostgreSQL = async(data) => {
+  console.log("create new accout, account Info:",data);
   const query = `INSERT INTO customerinformation (user_id, username, email, cart_list, created_on, status, confirmationcode)VALUES('${data.user_id}','${data.username}','${data.email}','${data.cart_list}','${data.created_on}','${data.status}','${data.confirmationcode}')`;
   try {
     const client = await pool.connect();
-      client.query(query);
+    client.query(query);
   } catch (err) {
     console.log(err);
   }
@@ -111,24 +113,23 @@ const AddingShoesToCartList = async(data,itemlist) => {
   }
 }
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const ActiveAccount = async(data) => {
+  console.log(data.params);
+  const query = `UPDATE customerinformation SET status = 'Active' WHERE confirmationcode = '${data.params.confirmationCode}'`
+  console.log(query);
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    console.log(res);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb'}));
 
 app.use(cors());
-
-// if (process.env.NODE_ENV === 'production') {
-//   app.use(express.static(path.join(__dirname, 'client/build')));
-
-//   app.get('*', function(req, res) {
-//     res.sendFile(path.join(__dirname, 'client/public', 'index.html'));
-//   });
-// }
-
-// pool.on('error', (err, client) => {
-//   console.error('Error:',err);
-
-
-
 
 app.listen(port, error => {
   if (error) throw error;
@@ -153,7 +154,7 @@ app.post('/payment', (req, res) => {
   });
 });
 
-app.post('/chatBot', (request, response) => {
+app.post('/api/chatBot', (request, response) => {
         dialogflowFulfillment(request, response);
 })
 
@@ -437,14 +438,14 @@ const dialogflowFulfillment = async(request, response) => {
     agent.handleRequest(intentMap)
   }
 
-app.get('/getData', async(req, res) => { 
+app.get('/api/getData', async(req, res) => { 
     var ResData = await RetrievingDatasFromPostgreSQL();
     app.set("booksinformation",ResData);
     req.session.BookData = ResData;
     res.send(ResData);  
 })
 
-app.post('/updatecartlist', async(req,res) => {
+app.post('/api/updatecartlist', async(req,res) => {
     console.log(req.body);
     const snapshot = req.body.cartlist.map(item => (
           {
@@ -457,28 +458,41 @@ app.post('/updatecartlist', async(req,res) => {
     AddingShoesToCartList(req.body.users,itemlist);
 })
 
-app.post('/userDocumentUpload', (request, response) => {
+app.post('/api/userDocumentUpload', (request, response) => {
   UploadingDataToPostgreSQL(request.body);  
 });
 
 app.get("/confirm/:token", (request, response) => {
-  console.log(request.params);
+  ActiveAccount(request);
 })
 
-app.post('/SendConformationEmail', (request, response) => {
+app.post('/api/SendConformationEmail', (request, response) => {
   SendingConfirmationEmail.sendConfirmationEmail(request.body);
 })
 
-app.get('/login', async (request, response) => {
+app.get('/api/login', async (request, response) => {
+  console.log("data login function receive:",request.query);
   const userid = request.query.user_id;
   console.log("Starting login function:",userid);
 
   if(userid == null) {
     return [];
   }
+
+
+
   console.log('Get userID, starting fetching')
   var ProductData = await RetrievingDatasFromPostgreSQL();
-  var customerdata = await GetcustomerInformation(userid);
+
+  for (var i = 0; i < 100; i++) {
+    if (customerdata == null) {
+        var customerdata = await GetcustomerInformation(userid);
+    } else {
+      break;
+    }
+  }
+
+  console.log("customer to login:",customerdata);
 
   if (customerdata[0].status != "Active") {
     return response.status(401).send({
@@ -521,13 +535,25 @@ app.get('/login', async (request, response) => {
   response.send(ResData);
 });
 
-app.get('/checkifexist', async (request,response) => {
+app.get('/api/checkifexist', async (request,response) => {
   var ResData = await CheckIfCustomerExisted(request.query.user_id);
   console.log(ResData);
 
   response.send(ResData);
-
 })
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'client/build')));
+
+  app.get('*', function(req, res) {
+    res.sendFile(path.join(__dirname, 'client/public', 'index.html'));
+  });
+}
+
+pool.on('error', (err, client) => {
+  console.error('Error:',err);
+});
+
 
 
 
