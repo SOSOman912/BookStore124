@@ -3,10 +3,11 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
-const {WebhookClient , Card, Suggestion} = require('dialogflow-fulfillment');
+const {WebhookClient , Card, Suggestion, Payload} = require('dialogflow-fulfillment');
 const { Pool, Client } = require("pg");
 if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { dialogflow, Image, } = require('actions-on-google')
 
 
 const collaborativeFilter = require('./collaborative_filtering/script.js');
@@ -159,7 +160,6 @@ app.post('/api/chatBot', (request, response) => {
 })
 
 const dialogflowFulfillment = async(request, response) => {
-
   const agent = new WebhookClient({request, response})
     const Welcome = (agent) => {
       var possibleResponse = [
@@ -179,12 +179,42 @@ const dialogflowFulfillment = async(request, response) => {
       
       agent.add('Sure');
       agent.add('Do you want me to recommend a random book to you or recommend base on your requirement?');
-      agent.add(new Suggestion('Just recommend me random book'));
-      agent.add(new Suggestion('Please provide books base on my requirement'));
+    }
+    const RandomBook = (agent) => {
+      agent.add("Do you want me to recommend book base on books average rating or your rating history?");
+      const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "Base on Rating",
+                },
+                {
+                  "text": "Base on your rating history (Rquire user rating history)"
+                }
+              ]
+            }
+          ]
+        ]
+      }
+    agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
     }
 
-    const RandomBook = (agent) => {
+
+    const RandomRatingBook = (agent) => {
       var productdata = app.get("booksinformation");
+
+      var number = app.get("RandomBookNumber");
+
+      console.log(number);
+
+      if (number == undefined) {
+        var number = 0;
+      } else {
+        number = number + 1;
+      }
 
       function compare (a,b) {
         if (a.average_rating < b.average_rating) {
@@ -198,51 +228,42 @@ const dialogflowFulfillment = async(request, response) => {
 
       var Sortedproductdata = productdata.sort(compare);
 
-      // for (var i = 0 ; i < productdata.length; i++) {
-      //   if (productdata[i].average_rating > product.average_rating) {
-      //     product = productdata[i];
-      //   }
-      // }
       app.set("booksinformation",productdata);
-
-      app.set("RandomBookNumber",0);
-
-      app.set("RandomBookList",Sortedproductdata)
-
-      var product = Sortedproductdata[0];
-
-      agent.add(new Card({
-        title: product.title,
-        imageUrl: product.small_image_url,
-        text: `Author:${product.authors}`
-      }));
-      agent.add(`This product is being introduced to you since it has the highest average_rating of ${product.average_rating}`);
-      agent.add(new Suggestion('Add this book to my cartlist please'));
-      agent.add(new Suggestion('Show me another book please'));
-    }
-
-    const ShowAnotherRandomBook = (agent) => {
-
-      var number = app.get("RandomBookNumber");
-
-      const Booklist = app.get("RandomBookList");
-
-      var number = number + 1;
 
       app.set("RandomBookNumber",number);
 
-      app.set("RandomBookList",Booklist);
+      app.set("RandomBookList",Sortedproductdata)
 
-      var product = Booklist[number];
+      var product = Sortedproductdata[number];
 
-      agent.add(new Card({
-        title: product.title,
-        imageUrl: product.small_image_url,
-        text: `Author:${product.authors}`
-      }));
-      agent.add(`This product is being introduced to you since it has the highest average_rating of ${product.average_rating}`);
-      agent.add(new Suggestion('Add this book to my cartlist please'));
-      agent.add(new Suggestion('Show me another book please'));
+      const payload = {
+          "richContent": [
+    [
+      {
+        "type": "image",
+        "rawUrl": `${product.image_url}`,
+        "accessibilityText": `${product.title}`
+      },
+      {
+        "type": "info",
+        "title": `${product.title}`,
+        "subtitle": `This book is being recommended to you since it got a high average rating of ${product.average_rating}`,
+      },
+      {
+        "type": "chips",
+        "options": [
+          {
+            "text": "I don't like this book",
+          },
+          {
+            "text": "Add this book to my cart list please"
+          }
+        ]
+      }
+    ]
+  ]
+}
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
     }
 
     const ShowAnotherSpecificBook = (agent) => {
@@ -261,14 +282,35 @@ const dialogflowFulfillment = async(request, response) => {
 
       var listlength = list.length;
 
-      agent.add(new Card({
-        title: product.title,
-        imageUrl: product.small_image_url,
-        text: `Author:${product.authors}`
-      }));
-    agent.add(`This books is the ${number + 1} books that meet your requirement, there are total ${listlength} books in the list`);
-    agent.add(new Suggestion('This is the book that I want to find!!!!'));
-    agent.add(new Suggestion('This is not the book I want, show me another book please'));
+      const payload = {
+          "richContent": [
+    [
+      {
+        "type": "image",
+        "rawUrl": `${product.image_url}`,
+        "accessibilityText": `${product.title}`
+      },
+      {
+        "type": "info",
+        "title": `${product.title}`,
+        "subtitle": `This book is being recommended to you since it met all your requirement`,
+      },
+      {
+        "type": "chips",
+        "options": [
+          {
+            "text": "This is not the book I want, show me another book please",
+          },
+          {
+            "text": "This is the book that I want to find!!!!"
+          }
+        ]
+      }
+    ]
+  ]
+}
+
+    agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
 
     }
 
@@ -331,10 +373,26 @@ const dialogflowFulfillment = async(request, response) => {
       }
 
       const SpecificBook = async(agent) => {
+
+      const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "I don't have the bookid",
+                }
+              ]
+            }
+          ]
+        ]
+      }
+
       agent.add("To receive recommendation from a book, You need to provide data for me to analysis");
       agent.add("Can you provide the bookid of the book you want to find?");
       agent.add("If yes, please enter the bookid, otherwise please press the button");
-      agent.add(new Suggestion("I don't have the bookid"));
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
       }
 
       const ReceiveId = async(agent) => {
@@ -347,13 +405,29 @@ const dialogflowFulfillment = async(request, response) => {
           id:null
         }
       }
+
       
     
-      app.set("Requirement",Requirement);
+     app.set("Requirement",Requirement);
+
+     const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "I don't have the isbn code",
+                }
+              ]
+            }
+          ]
+        ]
+      }
 
       agent.add("Can you provide the isbn code of the book you want to find?");
       agent.add("If yes, please enter the isbn code, otherwise please press the button");
-      agent.add(new Suggestion("I don't have the isbn code"));
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
       }
 
       const ReceiveIsbn = async(agent) => {
@@ -372,36 +446,62 @@ const dialogflowFulfillment = async(request, response) => {
       
       app.set("Requirement",Requirement);
 
+      const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "I don't have the specific authors",
+                }
+              ]
+            }
+          ]
+        ]
+      }
+
       agent.add("Can you provide the authors of the book you want to find?");
       agent.add("If yes, please enter the name of the authors, otherwise please press the button");
-      agent.add(new Suggestion("I don't have the specific authors"));
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
     }
 
     const ReceiveAuthors = async(agent) => {
-      var Requirement = app.get("Requirement");
-      var booksinformation = app.get("booksinformation");
-      if (request.body.queryResult.parameters.authors) {
-        var Requirement = {
-        ...Requirement,
-        authors:request.body.queryResult.parameters.authors
-        }
-      } else {
-        var Requirement = {
-        ...Requirement,
-        authors:null
-        }
+      var list = app.get("specificbooklist");
+
+      if (list == undefined) {
+          var Requirement = app.get("Requirement");
+          var booksinformation = app.get("booksinformation");
+          if (request.body.queryResult.parameters.authors) {
+            var Requirement = {
+            ...Requirement,
+            authors:request.body.queryResult.parameters.authors
+            }
+          } else {
+            var Requirement = {
+            ...Requirement,
+            authors:null
+            }
+          }
+
+        var list = booksinformation.filter(book => Requirement.id != null ? book.id === Requirement.id : book).filter(book => Requirement.isbn != null ? book.isbn == Requirement.isbn : book).filter(book => Requirement.authors != null ? book.authors == Requirement.authors.name : book );
+
+        console.log(list);
+
+        app.set("booksinformation",booksinformation);
       }
 
-    console.log(Requirement);
+      console.log(list);
 
+    app.set("specificbooklist",list);
 
-    const list = booksinformation.filter(book => Requirement.id != null ? book.id === Requirement.id : book).filter(book => Requirement.isbn != null ? book.isbn == Requirement.isbn : book).filter(book => Requirement.authors != null ? book.authors == Requirement.authors.name : book );
+    var number = app.get("specificRequirementNumber");
 
-    app.set("booksinformation",booksinformation);
-
-    app.set("specificbooklist", list);
-
-    var number = 0;
+    if (number == undefined) {
+      var number = 0;
+    } else {
+      number = number + 1;
+    }
 
     var product = list[number];
 
@@ -409,15 +509,35 @@ const dialogflowFulfillment = async(request, response) => {
 
     app.set("specificRequirementNumber",number);
 
-    agent.add(new Card({
-      title: product.title,
-      imageUrl: product.small_image_url,
-      text: `Author:${product.authors}`
-    }));
-    agent.add(`This books is the ${number + 1} books that meet your requirement, there are total ${listlength} books in the list`);
-    agent.add(new Suggestion('This is the book that I want to find!!!!'));
-    agent.add(new Suggestion('This is not the book I want, show me another book please'));
+    const payload = {
+          "richContent": [
+    [
+      {
+        "type": "image",
+        "rawUrl": `${product.image_url}`,
+        "accessibilityText": `${product.title}`
+      },
+      {
+        "type": "info",
+        "title": `${product.title}`,
+        "subtitle": `This book is being recommended to you since it met all your requirement`,
+      },
+      {
+        "type": "chips",
+        "options": [
+          {
+            "text": "This is not the book I want, show me another book please",
+          },
+          {
+            "text": "This is the book that I want to find!!!!"
+          }
+        ]
+      }
+    ]
+  ]
+}
 
+    agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
     }
 
 
@@ -425,7 +545,7 @@ const dialogflowFulfillment = async(request, response) => {
     intentMap.set("Welcome", Welcome);
     intentMap.set("Lookforproduct", Lookforproduct);
     intentMap.set("randombook", RandomBook);
-    intentMap.set("AnotherRandomBook",ShowAnotherRandomBook);
+    intentMap.set("RandomBook - Rating",RandomRatingBook);
     intentMap.set("AddBooksToCart", AddingBooksToCartListWithChatBot);
     intentMap.set("SpecificBook", SpecificBook);
     intentMap.set("SpecificBook - Receive id", ReceiveId);
