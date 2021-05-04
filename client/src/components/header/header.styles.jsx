@@ -5,7 +5,6 @@ import { ReactComponent as DropDownIcon  } from '../../assets/Hamburger_icon_whi
 
 export const HeaderContainer = styled.div`
     padding:0 2%;
-	background-color:#EDEDEC;
 	height: 100px;
 	width: 100%;
     border:none;

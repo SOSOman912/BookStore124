@@ -35,23 +35,16 @@ const config =
 
         const existed = await CheckIfUserExist(uid);
 
-        console.log(existed);
-
         if (existed.data[0].exists == false) {
            if (userAuth.emailVerified == true) {
               try {
-                await createUserProfileInDatabaseVerfied(userAuth,displayName);
+                await createUserProfileInDatabaseVerfied(userAuth,displayName).then(response => console.log("CreatedUser"));
               }catch (err) {
                 console.log(err);
               }
-           } else {
-                try{
-                await createUserProfileInDatabase(userAuth,displayName);
-              } catch (err) {
-                console.log(err);
-              }
-           }
+           } 
         }
+
   		 return userAuth;
   };
 
@@ -88,7 +81,9 @@ const config =
   export const createUserProfileInDatabase = async (userAuth, additionalData) => {
     if (!userAuth) return;
 
-    let token = GenerateToken();
+    let token = await GenerateToken();
+
+    console.log(additionalData);
 
     axios({
       url: '/api/SendConformationEmail',
@@ -115,6 +110,8 @@ const config =
     }).then(response => {
       console.log(response);
     })
+
+    window.location.href = "./EmailSended";
   }
 
   export const addCollectionAndDocument = async(collectionName, objects) => {

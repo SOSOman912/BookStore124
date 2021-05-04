@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 
 import './App.scss';
-import {ContentContainer,ChatBotContainer} from './App.styles'
+import {ContentContainer,ChatBotContainer,ContentBackgroudn} from './App.styles'
 import ChatBot from './components/chatBot/chatBot.components.jsx';
 import {selectDetailHidden} from './redux/shop/shop.selectors'
 import DetailViewer from './components/detail/detail.component'
@@ -18,6 +18,8 @@ import { setCurrentUser } from './redux/cart/cart.actions';
 import { selectCurrentUser } from './redux/cart/cart.selectors';
 import { fetchCollectionsStartAsync} from './redux/shop/shop.actions';
 import axios from 'axios';
+import EmailRegistrationPage from './pages/Email/Email.components.jsx';
+import PortfolioPage from './pages/portfolio/portfolio.component.jsx';
 
 class App extends React.Component {
   unsubscribeFromAuth = null;
@@ -54,6 +56,7 @@ class App extends React.Component {
     const { DetailHidden} = this.props;
     return (
           <ContentContainer>
+            <ContentBackgroudn>
                 { DetailHidden ? null :
                   <DetailViewer />
                 }
@@ -63,8 +66,10 @@ class App extends React.Component {
                     <Route exact path='/' component={Homepage} />
                     <Route exact path='/checkout' component={CheckoutPage} />
                     <Route exact path='/signin' render={() => this.props.currentUser ? (<Redirect to ='/' />) : (<SignInAndSignUpPage />)} />
-                  </Switch>  
-                   <ChatBotContainer />    
+                    <Route exact path='/EmailSended' component={EmailRegistrationPage} />
+                    <Route exact path='/Portfolio' component={PortfolioPage} />
+                  </Switch>   
+            </ContentBackgroudn>
           </ContentContainer>
     );
   }

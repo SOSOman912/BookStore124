@@ -6,7 +6,7 @@ import { auth, SignInWithGoogle } from '../../firebase/firebase.utils';
 
 import FormInput from '../form-input/form-input-component';
 
-import { SignInWrap, SignInTitle, ButtonsBarWrap } from './sign-in.styles'
+import { SignInWrap, SignInTitle, ButtonsBarWrap ,WarningMessageWrap,WarningMessageBG, WarningMessageMG} from './sign-in.styles'
 
 class SignIn extends React.Component {
 	constructor(props){
@@ -25,7 +25,8 @@ class SignIn extends React.Component {
 		const { email, password } = this.state;
 
 		try {
-			await auth.signInWithEmailAndPassword(email, password);
+			var userPort = await auth.signInWithEmailAndPassword(email, password);
+			console.log(userPort);
 			this.setState({ email: '', password: '', WarningMessage:''});
 		}catch (error) {
 			if (error.code === "auth/user-not-found") {
@@ -53,6 +54,11 @@ class SignIn extends React.Component {
 						<CustomButton type="submit"> Sign in </CustomButton>
 						<CustomButton onClick={SignInWithGoogle} isGoogleSignIn> SignInWithGoogle </CustomButton>
 					</ButtonsBarWrap>
+				{/*	<WarningMessageWrap>
+						<WarningMessageBG/>
+						<WarningMessageMG>WarningMessageWrap
+						</WarningMessageMG>
+					</WarningMessageWrap>*/}
 				</form>
 			</SignInWrap>
 			)

@@ -14,11 +14,11 @@ module.exports.sendConfirmationEmail = function(data,token) {
 	transport.sendMail({
 		from:'lamchunkit199902@gmail.com',
 		to:data.email,
-		subject: "Bookstore Email Confirmation",
+		subject: "Verify your email for bookstore124",
 		html: ` <h1>Email Confirmation</h1>
-				<h2>hello ${data.name}</h2>
+				<h2>Hello ${data.name}</h2>
 				<p>Thank you for your registration on Bookstore. Please confirm your email by clicking on the following link in order to use the service</p>
-				<a href=http://localhost:5000/confirm/${token}> Click here</a>
+				<a href=http://localhost:5000/confirm/${token}> http://localhost:5000/confirm/${token}</a>
 		`
 	}).catch(err => {
 		console.log(err);

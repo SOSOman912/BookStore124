@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import filtering from '../../components/Filtering/filtering.component.jsx';
 
 export const ShopPageContainer = styled.div`
-	margin:0 20%;
+	padding:0 5%;
 `
 
 export const FirstSection = styled.div`

@@ -312,7 +312,7 @@ const dialogflowFulfillment = async(request, response) => {
 
     agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
 
-    }
+    } 
 
 
       const AddingBooksToCartListWithChatBot = async(agent) => {
@@ -591,7 +591,6 @@ app.post('/api/SendConformationEmail', (request, response) => {
 })
 
 app.get('/api/login', async (request, response) => {
-  console.log("data login function receive:",request.query);
   const userid = request.query.user_id;
   console.log("Starting login function:",userid);
 
@@ -614,11 +613,11 @@ app.get('/api/login', async (request, response) => {
 
   console.log("customer to login:",customerdata);
 
-  if (customerdata[0].status != "Active") {
-    return response.status(401).send({
-      message: "Pending Account. Please Verify your Email First !"
-    })
-  }
+  // if (customerdata[0].status != "Active") {
+  //   return response.status(401).send({
+  //     message: "Pending Account. Please Verify your Email First !"
+  //   })
+  // }
 
   var recommendationList = collaborativeFilter.recomendation_eng('1735');
   if(!customerdata[0].cart_list == null) { 
@@ -657,8 +656,6 @@ app.get('/api/login', async (request, response) => {
 
 app.get('/api/checkifexist', async (request,response) => {
   var ResData = await CheckIfCustomerExisted(request.query.user_id);
-  console.log(ResData);
-
   response.send(ResData);
 })
 

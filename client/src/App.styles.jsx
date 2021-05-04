@@ -5,9 +5,17 @@ import { ReactComponent as Arrow } from './assets/Antu_arrow-right.svg'
 import ChatBot from './components/chatBot/chatBot.components.jsx';
 
 export const ContentContainer = styled.div`
-	width:1525px;
-	background-color:white;
+    font-family: 'Noto Sans', sans-serif;
+    padding:3% 21%;
+	background: linear-gradient(20deg, #D5B253, #D57661);
 	position:relative;
+    height:100%;
+`
+
+export const ContentBackgroudn = styled.div`
+    width:100%;
+    height:100%;
+    background-color:white;
 `
 
 export const ChatBotBtn = styled(chatBotIcon)`

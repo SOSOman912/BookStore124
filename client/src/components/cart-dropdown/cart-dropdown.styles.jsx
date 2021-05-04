@@ -10,7 +10,7 @@ export const CartDropDownMenu = styled.div`
   border: 1px solid black;
   background-color: white;
   top: 99px;
-  right: 154px;
+  right:0%;
   z-index: 5;
 `
 

@@ -18,8 +18,14 @@ const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden
 					</LogoContainer>
 					<OptionsContainer>
 						<LinkContainer>	
+							{
+								currentUser?
+								<OptionLink to='/Portfolio' > {currentUser.username} </OptionLink>
+								:
+								<OptionLink to='/signin'>SIGN IN</OptionLink>
+							}
 							<OptionLink to='/shop'>
-								CONTACT
+								CATEGORY
 							</OptionLink> 
 							{
 								currentUser?
@@ -35,10 +41,7 @@ const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden
 					   hidden ? null :
 					<CartDropDown />
 					}
-					{
-					   categoryhidden ? null :
-					<CategoryDropDown/>
-					}	
+	
 		</HeaderContainer>
 	);
 }

@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { ReactComponent as Arrow } from '../../assets/Antu_arrow-right.svg' 
 
 export const CategoryBox = styled.div`
-    width:476px;
+    width:238px;
     height:46px;
     background-color:#EB525D;
     border:none;
@@ -14,8 +14,8 @@ export const CategoryBox = styled.div`
 `
 
 export const CategoryItemBox = styled.div`
-    width:476px;
-    height:46px;
+    width:100%;
+    height:30px;
     border:none;
     border-bottom:1px solid rgba(255,255,255,0.2);
     display:flex;
@@ -38,8 +38,9 @@ export const CategoryTitle = styled.h2`
 
 export const Category = styled.div`
 	position:absolute;
-	left:20%;
-	width:476px;
+	right:0%;
+    top:99px;
+	width:195px;
 	height:60px;
 	background-color:white;
     z-index:2;
