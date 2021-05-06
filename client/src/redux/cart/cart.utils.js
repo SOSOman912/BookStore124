@@ -60,11 +60,13 @@ export const removeItemFromCart = (state, cartItemToRemove) => {
 
 export const clearItemFromCart = (state, cartItemToClear) => {
 	const { cartItems, currentUser } = state;
+	console.log(cartItemToClear);
 	console.log(state);
 	const newCartlist5 = state.cartItems.filter(item => 
 		item.id !== cartItemToClear.id
 		)
-	axios.post('/updatecartlist', {
+	console.log(newCartlist5);
+	axios.post('/api/updatecartlist', {
 		cartlist: newCartlist5,
 		users:currentUser
 	})

@@ -4,7 +4,7 @@ import Poster from '../../components/poster/poster.component.jsx'
 export const HomePageContainer = styled.div`
 	  background-color:#white;
 	  width:100%;
-
+	  width:1525px;
 `
 
 export const FirstSection = styled.div`

@@ -1,6 +1,14 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import { createStructuredSelector } from 'reselect';
+import UserInformation from '../../components/Profile_Component/Userinformation.component.jsx'
+import ProductToRatings from '../../components/Profile_Component/ProductToRatings.component.jsx'
+import BuyingHistory from '../../components/Profile_Component/BuyingHistory.component.jsx'
+import {selectUserinformationHidden,selectBuyingHistoryHidden,selectProductToRatingsHidden} from '../../redux/Profile/Profile.selectors.js'
+import {toggleUserInformationHidden,toggleBuyingHistoryHidden,toggleRatingsHidden} from '../../redux/Profile/Profile.actions.js'
+import { selectCurrentUser } from '../../redux/cart/cart.selectors.js'
+import {fetchBuyingHistoryStartAsync} from '../../redux/Profile/Profile.actions.js'
+
 import { PortFolioPageContainer,
 		 PortFolioContentContainer,
 		 PortFolioContentBackground,
@@ -11,8 +19,18 @@ import { PortFolioPageContainer,
 		 Title
 		} from './portfolio.styles.jsx'
 
-const PortfolioPage = () => {
-	return(
+
+
+class PortfolioPage extends React.Component {
+
+	componentDidMount() {
+		const {fetchBuyingHistoryStartAsync,CurrentUser} = this.props
+		fetchBuyingHistoryStartAsync(CurrentUser);
+	}
+
+	render() {
+		const {UserInformationHidden,BuyingHistoryHidden,ProductsToRatingHidden,CurrentUser,toggleUserInformationHidden,toggleBuyingHistoryHidden,toggleRatingsHidden} = this.props
+		return(
 		<PortFolioPageContainer>
 			<PortFolioContentContainer>
 				<PortFolioContentBackground/>
@@ -21,31 +39,54 @@ const PortfolioPage = () => {
 				<PortFolioContent>
 					<FirstSection>
 						<Title>NAVIGATION</Title>
-						<Options>
+						<Options onClick={() => toggleUserInformationHidden()}>
 							USER INFORMATION
 						</Options>
-						<Options>
+						<Options onClick={() => toggleBuyingHistoryHidden()}>
 							BUYING HISTORY
 						</Options>
-						<Options>
+						<Options onClick={() => toggleRatingsHidden()}>
 							RATINGS
 						</Options>
 					</FirstSection>
 					<SecondSection>
+					{	
+						UserInformationHidden ?
+						null
+						: <UserInformation/>
+					}
+					{	
+						ProductsToRatingHidden ?
+						null
+						: <ProductToRatings/>
+					}
+					{	
+						BuyingHistoryHidden ?
+						null
+						: <BuyingHistory/>
+					}
 
 					</SecondSection>
 				</PortFolioContent>
 			</PortFolioContentContainer>
 		</PortFolioPageContainer>
 		)
-}
+	}
+} 
+
 
 const mapStateToProps = createStructuredSelector({
-
+	UserInformationHidden: selectUserinformationHidden,
+	BuyingHistoryHidden: selectBuyingHistoryHidden,
+	ProductsToRatingHidden: selectProductToRatingsHidden,
+	CurrentUser: selectCurrentUser
 });
 
 const mapDispatchToProps = (dispatch) => ({
-
+	toggleUserInformationHidden: () => dispatch(toggleUserInformationHidden()),
+	toggleBuyingHistoryHidden: () => dispatch(toggleBuyingHistoryHidden()),
+	toggleRatingsHidden: () => dispatch(toggleRatingsHidden()),
+	fetchBuyingHistoryStartAsync: currentUser => dispatch(fetchBuyingHistoryStartAsync(currentUser))
 });
 
 export default connect(mapStateToProps,mapDispatchToProps)(PortfolioPage)

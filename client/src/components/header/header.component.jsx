@@ -31,7 +31,7 @@ const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden
 								currentUser?
 								<OptionLink as='div' onClick={() => auth.signOut()}> SIGN OUT </OptionLink>
 								:
-								<OptionLink to='/signin'>SIGN IN</OptionLink>
+								<OptionLink to='/signin'></OptionLink>
 							}
 							</LinkContainer>
 						<CartIcon/>

@@ -6,6 +6,7 @@ import Chatbotreducer from './chatBot/chatbot.reducer';
 import cartReducer from './cart/cart.reducer';
 import directoryReducer from './directory/directory.reducer';
 import FilteringReducer from './Filtering/Filtering.reducer';
+import ProfileReducer from './Profile/Profile.reducer';
 
 const persistConfig = {
 	key: 'root',
@@ -18,7 +19,8 @@ const rootReducer = combineReducers ({
 	cart: cartReducer,
 	directory: directoryReducer,
 	shop: shopReducer,
-	chatBot: Chatbotreducer
+	chatBot: Chatbotreducer,
+	Profile: ProfileReducer
 });
 
 export default persistReducer(persistConfig, rootReducer);

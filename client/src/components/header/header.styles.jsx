@@ -56,8 +56,8 @@ export const OptionLink = styled(Link)`
 `
 
 export const LOGO = styled(Logo)`
-    width:350px;
-    height:300%;
+    width:160px;
+    height:100%;
 `
 
 export const DROPDOWNICON = styled(DropDownIcon)`

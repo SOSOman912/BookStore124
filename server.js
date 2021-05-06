@@ -1,4 +1,3 @@
-const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -8,6 +7,7 @@ const { Pool, Client } = require("pg");
 if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { dialogflow, Image, } = require('actions-on-google')
+const express = require('express');
 
 
 const collaborativeFilter = require('./collaborative_filtering/script.js');
@@ -31,6 +31,8 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
+
+var booksinformation ;
 
 
 const UploadingDataToPostgreSQL = async(data) => {
@@ -127,6 +129,28 @@ const ActiveAccount = async(data) => {
   }
 }
 
+const UpdateHistory = async(data) => {
+  const query = `INSERT INTO order_log (id, customer_id, created_at, updated_at, rating, items)VALUES('${data.id}','${data.customer_id}','${data.created_at}','${data.updated_at}','${data.Rating}','${data.Items}')`;
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    console.log('History Update SUCCESS');
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+const GetBuyingHistory = async(data) => {
+  const query = `SELECT * FROM order_log WHERE customer_id = '${data.id}'`
+  try {
+    const client = await pool.connect();
+    const res = await client.query(query);
+    return res.rows
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
 
@@ -205,6 +229,8 @@ const dialogflowFulfillment = async(request, response) => {
 
     const RandomRatingBook = (agent) => {
       var productdata = app.get("booksinformation");
+
+      console.log(productdata);
 
       var number = app.get("RandomBookNumber");
 
@@ -561,17 +587,19 @@ const dialogflowFulfillment = async(request, response) => {
 app.get('/api/getData', async(req, res) => { 
     var ResData = await RetrievingDatasFromPostgreSQL();
     app.set("booksinformation",ResData);
+    const booksinformation = ResData;
     req.session.BookData = ResData;
     res.send(ResData);  
 })
 
 app.post('/api/updatecartlist', async(req,res) => {
+
     console.log(req.body);
     const snapshot = req.body.cartlist.map(item => (
           {
             product_id: item.id,
             quantity: item.quantity
-          }
+          } 
         ));
     const itemlist = JSON.stringify(snapshot);
     app.set('updatedCartlist',snapshot);
@@ -590,6 +618,45 @@ app.post('/api/SendConformationEmail', (request, response) => {
   SendingConfirmationEmail.sendConfirmationEmail(request.body);
 })
 
+app.post('/api/updateHistory', (request, response) => {
+  const CList = request.body.Items.map(item => ({
+    product_id: item.id,
+    quantity: item.quantity,
+    Rating: false
+  }));
+
+  const CCList = JSON.stringify(CList);
+
+  const snapshot = {
+    customer_id: request.session.currentUser[0].id,
+    Items: CCList,
+    id: request.body.id,
+    created_at: request.body.created_at,
+    updated_at: request.body.updated_at,
+    Rating: request.body.Rating
+  }
+
+  UpdateHistory(snapshot);
+});
+
+app.get('/api/getBuyingHistory', async(request, response) => {
+    console.log("Start Fetching Buying History");
+    var data = await GetBuyingHistory(request.query);
+    var ProductData = await RetrievingDatasFromPostgreSQL();
+
+    for (var i = 0; i < data.length; i++) {
+      var OriginalList = data[i].items;
+      var TranformingCartList = OriginalList.map(cartItem => {
+      for (var i = 0; i< ProductData.length; i++) {
+        if (cartItem.product_id == ProductData[i].id) {
+          return {...ProductData[i], quantity: cartItem.quantity, UserAlreadyRated: cartItem.Rating};
+        }}})
+
+      data[i].items = TranformingCartList;
+    }
+    response.send(data);
+})
+
 app.get('/api/login', async (request, response) => {
   const userid = request.query.user_id;
   console.log("Starting login function:",userid);
@@ -598,35 +665,31 @@ app.get('/api/login', async (request, response) => {
     return [];
   }
 
-
-
   console.log('Get userID, starting fetching')
   var ProductData = await RetrievingDatasFromPostgreSQL();
 
   for (var i = 0; i < 100; i++) {
     if (customerdata == null) {
         var customerdata = await GetcustomerInformation(userid);
+        console.log("Trying to get customer data");
     } else {
       break;
     }
   }
 
-  console.log("customer to login:",customerdata);
-
-  // if (customerdata[0].status != "Active") {
-  //   return response.status(401).send({
-  //     message: "Pending Account. Please Verify your Email First !"
-  //   })
-  // }
-
   var recommendationList = collaborativeFilter.recomendation_eng('1735');
+
+  console.log("customer RawData",customerdata[0].cart_list);
+
   if(!customerdata[0].cart_list == null) { 
+    console.log("Transforming cartList ......")
     var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
       for (var i = 0; i< ProductData.length; i++) {
         if (cartItem.product_id == ProductData[i].id) {
           return {...ProductData[i], quantity: cartItem.quantity};
         }}})}
     else {
+      console.log("CartList is currently Null");
       var TranformingCartList = [];
     }
 
@@ -637,6 +700,8 @@ app.get('/api/login', async (request, response) => {
       }
     }
   })
+
+  request.session.currentUser = customerdata;
 
   app.set("currentUser",customerdata);
   app.set("updatedCartlist",TranformingCartList);
@@ -650,6 +715,8 @@ app.get('/api/login', async (request, response) => {
     cart_list: TranformingCartList,
     recommendationList: TransformingRecommendationList  
   }
+
+  console.log("customer to login:",ResData.cart_list);
 
   response.send(ResData);
 });

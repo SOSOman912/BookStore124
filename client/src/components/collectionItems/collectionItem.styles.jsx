@@ -18,9 +18,11 @@ const fadingIn = keyframes`
 `
 
 export const CollectionItemWrap = styled.div`
+	margin:0% 10%;
 	display:flex;
 	flex-direction: column;
-	height: 280px;
+	width:150px;
+	height: 250px;
 	align-items:center;
 	position:relative;
 	margin-bottom: 50px;
@@ -38,8 +40,8 @@ export const CollectionItemWrap = styled.div`
 ` 
 
 export const ImageAndCustomButtonWrapper = styled.div`
-	width:168px;
-	height:240px;
+	width:100%;
+	height:80%;
 	position:relative;
 	margin-bottom:5px;
 `
@@ -76,7 +78,7 @@ export const CollectionFooter = styled.div`
 	width: 100%;
 	display:flex;
 	flex-direction: column;
-	font-size: 18px;
+	font-size: 14px;
 
 	.author {
 		color:green;
@@ -93,6 +95,17 @@ export const Price = styled.span`
 	width:15%;
 	color:#de6666;
 	font-weight: bold;
+`
+
+export const StarRating = styled.div`
+	display:flex;
+	width:100px;
+	height:10px;
+`
+
+export const StarIconWrapper = styled.div`
+	width:15px;
+	height:150px;
 `
 
 

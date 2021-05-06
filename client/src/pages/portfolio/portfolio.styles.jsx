@@ -2,7 +2,7 @@ import styled from 'styled-components'
 
 export const PortFolioPageContainer = styled.div`
 	font-family: 'Noto Sans', sans-serif;
-	padding:0 5%;
+	width:1525px;
 	height:100%;
 `
 
@@ -19,6 +19,7 @@ export const PortFolioContentBackground = styled.div`
 
 export const PortFolioContent = styled.div`
 	display:flex;
+	justify-content:space-between;
 `
 
 export const FirstSection = styled.div`
@@ -37,6 +38,7 @@ export const Options = styled.div`
 	font-family: 'Noto Sans', sans-serif;
 	margin-bottom:40px;
 	height:30px;
+	cursor:pointer;
 `
 
 export const Title = styled.p`

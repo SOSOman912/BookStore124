@@ -54,11 +54,6 @@ class SignIn extends React.Component {
 						<CustomButton type="submit"> Sign in </CustomButton>
 						<CustomButton onClick={SignInWithGoogle} isGoogleSignIn> SignInWithGoogle </CustomButton>
 					</ButtonsBarWrap>
-				{/*	<WarningMessageWrap>
-						<WarningMessageBG/>
-						<WarningMessageMG>WarningMessageWrap
-						</WarningMessageMG>
-					</WarningMessageWrap>*/}
 				</form>
 			</SignInWrap>
 			)

@@ -55,3 +55,6 @@ export const getrecommendationItems = () => ({
 	type:shopActionType.GET_RECOMMENDATION_ITEMS,
 })
 
+export const togglelogininmessagehidden = () => ({
+	type:shopActionType.TOGGLE_LOGININMESSAGE_HIDDEN,
+})

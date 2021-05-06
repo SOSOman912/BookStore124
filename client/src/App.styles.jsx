@@ -6,9 +6,12 @@ import ChatBot from './components/chatBot/chatBot.components.jsx';
 
 export const ContentContainer = styled.div`
     font-family: 'Noto Sans', sans-serif;
-    padding:3% 21%;
-	background: linear-gradient(20deg, #D5B253, #D57661);
+	background-color:white
 	position:relative;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
     height:100%;
 `
 

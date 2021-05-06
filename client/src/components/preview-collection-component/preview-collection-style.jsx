@@ -21,3 +21,8 @@ export const PreviewWrap = styled.div`
   display:grid;
   grid-template-columns:1fr 1fr 1fr 1fr;
 `;
+
+export const ImageContainer = styled.div`
+    width: 23%;
+    padding-right: 15px;
+`

@@ -1,0 +1,43 @@
+import React from 'react';
+
+import { ProductToRatingsItemContainer,
+		 Title,
+		 Data,
+		 ContentContainer,
+		 CheckoutHeaderWrap,
+		 HeaderBlockWrap
+		} from './ProductToRatingsItem.styles'
+
+import ProductToRatingsDetail from './ProductToRatingsDetail.component';
+
+const ProductToRatingsItem = ({cartItem}) => {
+	const { id, customer_id, updated_at,created_at, items,rating} = cartItem;
+	return (
+		<ProductToRatingsItemContainer>
+			<CheckoutHeaderWrap >
+				<HeaderBlockWrap >
+					<span>Product</span>
+				</HeaderBlockWrap>
+				<HeaderBlockWrap >
+					<span>Description</span>
+				</HeaderBlockWrap>
+				<HeaderBlockWrap >
+					<span>Quantity</span>
+				</HeaderBlockWrap>
+				<HeaderBlockWrap >
+					<span>Price</span>
+				</HeaderBlockWrap>
+				<HeaderBlockWrap >
+					<span>Rate</span>
+				</HeaderBlockWrap>
+			</CheckoutHeaderWrap>
+			{   
+				items.map(item => (
+					<ProductToRatingsDetail Item={item}/>
+					))
+			}
+		</ProductToRatingsItemContainer>
+		)
+}
+
+export default ProductToRatingsItem;

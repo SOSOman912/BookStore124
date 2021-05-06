@@ -16,7 +16,7 @@ const DetailViewer = ({ElaboratedItem, removeElaboratedItem}) => {
 	return(
 	<DetailWrapper>	
 		<Overlay onClick={()=>removeElaboratedItem()}></Overlay>
-		<Colorbox >
+		<Colorbox>
 				<Boxwrapper>
 					<BoxContent>
 						<ContentLeft>

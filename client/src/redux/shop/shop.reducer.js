@@ -8,7 +8,7 @@ const INITIAL_STATE = {
 	hidden: true,
 	PosterToshow: 1,
 	Categoryhidden: true,
-	
+	LoginMessagehidden: true,
 }
 
 const shopReducer = ( state = INITIAL_STATE, action) => {
@@ -56,6 +56,11 @@ const shopReducer = ( state = INITIAL_STATE, action) => {
 			return {
 				...state,
 				Categoryhidden: !state.Categoryhidden
+			}
+		case shopActionType.TOGGLE_LOGININMESSAGE_HIDDEN:
+			return {
+				...state,
+				LoginMessagehidden: !state.LoginMessagehidden
 			}
 		default:
 			return state;

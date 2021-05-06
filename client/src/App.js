@@ -6,7 +6,7 @@ import { createStructuredSelector } from 'reselect';
 import './App.scss';
 import {ContentContainer,ChatBotContainer,ContentBackgroudn} from './App.styles'
 import ChatBot from './components/chatBot/chatBot.components.jsx';
-import {selectDetailHidden} from './redux/shop/shop.selectors'
+import {selectDetailHidden, selectLoginMessageHidden} from './redux/shop/shop.selectors'
 import DetailViewer from './components/detail/detail.component'
 import Homepage from './pages/homepage/homepage.components';
 import ShopPage from './pages/shop/shop.component';
@@ -20,12 +20,14 @@ import { fetchCollectionsStartAsync} from './redux/shop/shop.actions';
 import axios from 'axios';
 import EmailRegistrationPage from './pages/Email/Email.components.jsx';
 import PortfolioPage from './pages/portfolio/portfolio.component.jsx';
+import WarningLoginFirst from './components/WarningMessage/WarningLoginFirst.component'
+import {fetchBuyingHistoryStartAsync} from './redux/Profile/Profile.actions.js'
 
 class App extends React.Component {
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-    const { setCurrentUser,fetchCollectionsStartAsync } = this.props;
+    const { setCurrentUser,fetchCollectionsStartAsync,fetchBuyingHistoryStartAsync } = this.props;
     fetchCollectionsStartAsync();
 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
@@ -35,7 +37,7 @@ class App extends React.Component {
             params: {
               user_id: response.uid
             }
-          })).then(response => setCurrentUser(response.data)).catch(error=> {
+          })).then(response => {setCurrentUser(response.data); fetchBuyingHistoryStartAsync(response.data.id) }).catch(error=> {
          if (error.response.status == 401) {
           console.log("Your account has not yet verifyed!");
          } 
@@ -53,12 +55,14 @@ class App extends React.Component {
   }
 
   render() {
-    const { DetailHidden} = this.props;
+    const { DetailHidden, LoginHidden} = this.props;
     return (
           <ContentContainer>
-            <ContentBackgroudn>
                 { DetailHidden ? null :
                   <DetailViewer />
+                }
+                { LoginHidden ? null :
+                  <WarningLoginFirst />
                 }
                   <Header /> 
                   <Switch>
@@ -69,7 +73,6 @@ class App extends React.Component {
                     <Route exact path='/EmailSended' component={EmailRegistrationPage} />
                     <Route exact path='/Portfolio' component={PortfolioPage} />
                   </Switch>   
-            </ContentBackgroudn>
           </ContentContainer>
     );
   }
@@ -78,11 +81,13 @@ class App extends React.Component {
 const mapStateToProps = createStructuredSelector({
   currentUser: selectCurrentUser,
   DetailHidden:  selectDetailHidden,
+  LoginHidden: selectLoginMessageHidden
 })
 
 const mapDispatchToProps = dispatch => ({
   setCurrentUser: user => dispatch(setCurrentUser(user)),
   fetchCollectionsStartAsync:  () => dispatch(fetchCollectionsStartAsync()),
+  fetchBuyingHistoryStartAsync: currentUser => dispatch(fetchBuyingHistoryStartAsync(currentUser))
 });
 
 export default connect(

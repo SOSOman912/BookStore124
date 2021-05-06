@@ -51,3 +51,8 @@ export const selectCategoryhidden = createSelector(
 	[selectshop],
 	shop => shop.Categoryhidden
 	)
+
+export const selectLoginMessageHidden = createSelector(
+	[selectshop],
+	shop => shop.LoginMessagehidden
+	)
