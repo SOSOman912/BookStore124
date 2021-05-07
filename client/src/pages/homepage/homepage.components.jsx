@@ -18,10 +18,12 @@ const Homepage = ({Collections,CurrentUser}) => {
 		<SecondSection>
 			 <PosterContainer/>
 		</SecondSection>
-		{
-			CurrentUser ?
+		{CurrentUser ?
+			CurrentUser.recommendationList?
 				<CollaborativeFilterPreview />
 			:
+				null
+			:   
 				null
 		}
 		<CollectionsOverview  />

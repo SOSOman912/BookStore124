@@ -36,6 +36,7 @@ export const RatingWrapper = styled.div`
 `
 
 export const SubmitButton = styled.div`
+	cursor:pointer;
 	margin-top:20px;
 	display:flex;
 	justify-content:center;

@@ -10,10 +10,12 @@ import { LinkContainer, LOGO, LogoContainer,  HeaderContainer, OptionsContainer,
 import { togglecategoryhidden } from '../../redux/shop/shop.actions';
 import CategoryDropDown  from '../category-dropdown/category-dropdown.component';
 import { selectCategoryhidden } from '../../redux/shop/shop.selectors';
-const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden}) => {
+import { withRouter } from 'react-router-dom'
+const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden,history}) => {
+
 	return(
 		<HeaderContainer >
-					<LogoContainer to='/'>
+					<LogoContainer to='/' onClick={() => history.go(0)}>
 						<LOGO/>
 					</LogoContainer>
 					<OptionsContainer>
@@ -29,7 +31,7 @@ const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden
 							</OptionLink> 
 							{
 								currentUser?
-								<OptionLink as='div' onClick={() => auth.signOut()}> SIGN OUT </OptionLink>
+								<OptionLink as='div' to='/' onClick={() => auth.signOut()}> SIGN OUT </OptionLink>
 								:
 								<OptionLink to='/signin'></OptionLink>
 							}
@@ -56,4 +58,4 @@ const mapDispatchToProps = (dispatch) => ({
 	togglecategoryhidden: () => dispatch(togglecategoryhidden())
 })
 
-export default connect(mapStateToProps,mapDispatchToProps)(Header);
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(Header));

@@ -34,6 +34,20 @@ app.use(session({
 
 var booksinformation ;
 
+const SetRatingToJsonFile = async(data) => {
+  let rawdata = fs.readFileSync('./collaborative_filtering/data.json');
+  let ratings = await JSON.parse(rawdata);
+  console.log(data.UserId);
+  if (ratings[data.UserId]) {
+      ratings[data.UserId][data.bookid] = data.Rating;
+  } else {
+    ratings[data.UserId] = {}
+    ratings[data.UserId][data.bookid] = data.Rating;
+  }
+  
+  json = JSON.stringify(ratings);
+  fs.writeFile('./collaborative_filtering/data.json', json, function (err) { if (err) throw err;});
+} 
 
 const UploadingDataToPostgreSQL = async(data) => {
   console.log("create new accout, account Info:",data);
@@ -117,7 +131,6 @@ const AddingShoesToCartList = async(data,itemlist) => {
 }
 
 const ActiveAccount = async(data) => {
-  console.log(data.params);
   const query = `UPDATE customerinformation SET status = 'Active' WHERE confirmationcode = '${data.params.confirmationCode}'`
   console.log(query);
   try {
@@ -618,6 +631,10 @@ app.post('/api/SendConformationEmail', (request, response) => {
   SendingConfirmationEmail.sendConfirmationEmail(request.body);
 })
 
+app.post('/api/SetRating', (request, response) => {
+  SetRatingToJsonFile(request.body);
+})
+
 app.post('/api/updateHistory', (request, response) => {
   const CList = request.body.Items.map(item => ({
     product_id: item.id,
@@ -659,25 +676,28 @@ app.get('/api/getBuyingHistory', async(request, response) => {
 
 app.get('/api/login', async (request, response) => {
   const userid = request.query.user_id;
-  console.log("Starting login function:",userid);
+  console.log("Login - Starting login function:",userid);
 
   if(userid == null) {
     return [];
   }
 
-  console.log('Get userID, starting fetching')
+  console.log('Login - Get userID, starting fetching');
   var ProductData = await RetrievingDatasFromPostgreSQL();
+  console.log('Login - Get Product Data');
 
   for (var i = 0; i < 100; i++) {
     if (customerdata == null) {
+        setTimeout(function() {console.log("Login - Trying to get customer data");},1000);
         var customerdata = await GetcustomerInformation(userid);
-        console.log("Trying to get customer data");
+
     } else {
+      console.log("Login - Customer Get:",customerdata);
       break;
     }
   }
 
-  var recommendationList = collaborativeFilter.recomendation_eng('1735');
+  var recommendationList = collaborativeFilter.recomendation_eng(customerdata[0].id);
 
   console.log("customer RawData",customerdata[0].cart_list);
 
@@ -693,13 +713,18 @@ app.get('/api/login', async (request, response) => {
       var TranformingCartList = [];
     }
 
-  var TransformingRecommendationList = recommendationList[1].map(recommendationItem => {
-    for ( var i = 0; i< ProductData.length; i++ ) {
-      if (recommendationItem == ProductData[i].id) {
-        return {...ProductData[i]}
-      }
-    }
-  })
+    if(!recommendationList == null) {
+            var TransformingRecommendationList = recommendationList[1].map(recommendationItem => {
+          for ( var i = 0; i< ProductData.length; i++ ) {
+            if (recommendationItem == ProductData[i].id) {
+              return {...ProductData[i]}
+            }
+          }
+        })
+          } else {
+            var TransformingRecommendationList = null;
+          }
+  
 
   request.session.currentUser = customerdata;
 

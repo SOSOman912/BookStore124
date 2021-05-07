@@ -7,7 +7,6 @@ import BuyingHistory from '../../components/Profile_Component/BuyingHistory.comp
 import {selectUserinformationHidden,selectBuyingHistoryHidden,selectProductToRatingsHidden} from '../../redux/Profile/Profile.selectors.js'
 import {toggleUserInformationHidden,toggleBuyingHistoryHidden,toggleRatingsHidden} from '../../redux/Profile/Profile.actions.js'
 import { selectCurrentUser } from '../../redux/cart/cart.selectors.js'
-import {fetchBuyingHistoryStartAsync} from '../../redux/Profile/Profile.actions.js'
 
 import { PortFolioPageContainer,
 		 PortFolioContentContainer,
@@ -24,8 +23,7 @@ import { PortFolioPageContainer,
 class PortfolioPage extends React.Component {
 
 	componentDidMount() {
-		const {fetchBuyingHistoryStartAsync,CurrentUser} = this.props
-		fetchBuyingHistoryStartAsync(CurrentUser);
+
 	}
 
 	render() {
@@ -86,7 +84,6 @@ const mapDispatchToProps = (dispatch) => ({
 	toggleUserInformationHidden: () => dispatch(toggleUserInformationHidden()),
 	toggleBuyingHistoryHidden: () => dispatch(toggleBuyingHistoryHidden()),
 	toggleRatingsHidden: () => dispatch(toggleRatingsHidden()),
-	fetchBuyingHistoryStartAsync: currentUser => dispatch(fetchBuyingHistoryStartAsync(currentUser))
 });
 
 export default connect(mapStateToProps,mapDispatchToProps)(PortfolioPage)

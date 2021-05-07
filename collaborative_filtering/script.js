@@ -104,6 +104,10 @@ module.exports.recomendation_eng = function(person) {
 
 	var dataset = ratingsdataset();
 
+	if (!dataset[person]) {
+		return null;
+	}
+
 	var totals = {
 		setDefault:function(props,value){
 			if(!this[props]) {

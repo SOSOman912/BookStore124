@@ -10,6 +10,11 @@ import {ItemContainer,
 		SubmitButton
 		} from './ProductToRatingsDetail.styles'
 
+import axios from 'axios'
+import {connect} from 'react-redux';
+import { createStructuredSelector } from 'reselect';
+import { selectCurrentUser } from '../../../redux/cart/cart.selectors'
+
 function StarIcon(props) {
 	  const { fill = 'none' } = props;
 	  return (
@@ -39,10 +44,20 @@ function RatingIcon(props) {
 		)
 }
 
-const ProductToRatingsDetail = ({Item}) => {
-	const {small_image_url,title,quantity,sale_price} = Item
+function SetRating(id,UserId,Rating) {
+	axios.post('/api/SetRating', {
+		bookid: id,
+		UserId:UserId,
+		Rating:Rating
+	});
+}
 
-	const [rating, setRating] = React.useState(1);
+const ProductToRatingsDetail = ({Item,CurrentUser}) => {
+	const {small_image_url,title,quantity,sale_price,id} = Item
+
+	const UserId = CurrentUser.id;
+
+	const [rating, setRating] = React.useState();
 
 	const [hoverRating, setHoverRating] = React.useState(1);
 
@@ -54,10 +69,9 @@ const ProductToRatingsDetail = ({Item}) => {
 		setHoverRating(0)
 	}
 
-	const onSaveRating = (index) => {
+	const onSaveRating = async(index) => {
 		console.log(index);
-		setRating(index);
-		console.log(rating);
+		await setRating(index);
 	};
 
 	return(
@@ -83,7 +97,7 @@ const ProductToRatingsDetail = ({Item}) => {
 					)
 				}
 				</StarRating>
-				<SubmitButton>
+				<SubmitButton onClick={() => SetRating(id,UserId,rating)}>
 					Submit
 				</SubmitButton>
 			</RatingWrapper>
@@ -91,4 +105,8 @@ const ProductToRatingsDetail = ({Item}) => {
 	)
 }
 
-export default ProductToRatingsDetail;
+const mapStateToProps = createStructuredSelector({
+	CurrentUser: selectCurrentUser
+})
+
+export default connect(mapStateToProps)(ProductToRatingsDetail);

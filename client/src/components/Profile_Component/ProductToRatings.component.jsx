@@ -15,8 +15,6 @@ import ProductToRatingsItem from './ProductToRatings/ProductToRatingsItem.compon
 
 import ProductToRatingsDetail from './ProductToRatings/ProductToRatingsDetail.component'
 
-
-
 const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsync}) => {
 	return (
 		<UserInformationContainer>
