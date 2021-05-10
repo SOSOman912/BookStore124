@@ -13,16 +13,21 @@ import { selectCategoryhidden } from '../../redux/shop/shop.selectors';
 import { withRouter } from 'react-router-dom'
 const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden,history}) => {
 
+const ReDirectToHomePage = () => {
+	history.push('/');
+	history.go(0)
+}
+
 	return(
 		<HeaderContainer >
-					<LogoContainer to='/' onClick={() => history.go(0)}>
+					<LogoContainer onClick={() => ReDirectToHomePage()}>
 						<LOGO/>
 					</LogoContainer>
 					<OptionsContainer>
 						<LinkContainer>	
 							{
 								currentUser?
-								<OptionLink to='/Portfolio' > {currentUser.username} </OptionLink>
+								<OptionLink to='/Portfolio'> {currentUser.username} </OptionLink>
 								:
 								<OptionLink to='/signin'>SIGN IN</OptionLink>
 							}

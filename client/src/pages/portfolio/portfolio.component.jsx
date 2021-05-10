@@ -21,11 +21,6 @@ import { PortFolioPageContainer,
 
 
 class PortfolioPage extends React.Component {
-
-	componentDidMount() {
-
-	}
-
 	render() {
 		const {UserInformationHidden,BuyingHistoryHidden,ProductsToRatingHidden,CurrentUser,toggleUserInformationHidden,toggleBuyingHistoryHidden,toggleRatingsHidden} = this.props
 		return(

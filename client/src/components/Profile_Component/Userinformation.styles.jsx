@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 export const UserInformationContainer = styled.div`
-	width:1000px;
+	width:100%;
 	height: 900px;
 	border:1px solid #8F8F8F;
 	padding:10%;
@@ -35,10 +35,7 @@ export const CheckoutHeaderWrap = styled.div`
 
 export const HeaderBlockWrap= styled.div`
   text-transform: capitalize;
-  width: 22.5%;
-  &:last-child {
-    width: 10%;
-  }
+  width: 25%;
 `
 
 export const BuyingHistoryItemContainer = styled.div`

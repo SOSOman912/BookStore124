@@ -30,7 +30,7 @@ const StripeCheckoutButton = ({ price , CartList}) => {
         axios({
           url: '/api/updateHistory',
           method: 'post',
-          data: {
+          data :{
             id: receipt_id,
             created_at: new Date().toUTCString(),
             updated_at: new Date().toUTCString(),

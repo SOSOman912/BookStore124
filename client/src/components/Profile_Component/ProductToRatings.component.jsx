@@ -28,9 +28,6 @@ const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsyn
 					<span>Description</span>
 				</HeaderBlockWrap>
 				<HeaderBlockWrap >
-					<span>Quantity</span>
-				</HeaderBlockWrap>
-				<HeaderBlockWrap >
 					<span>Price</span>
 				</HeaderBlockWrap>
 				<HeaderBlockWrap >

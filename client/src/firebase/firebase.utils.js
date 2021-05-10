@@ -31,21 +31,21 @@ const config =
         console.log(userAuth);
 
         const { displayName, email, uid } = userAuth;
+
         const createdAt = new Date();
 
-        const existed = await CheckIfUserExist(uid);
+        const data = {
+        user_id: userAuth.uid,
+        username: displayName,
+        email: userAuth.email,
+        cart_list:null,
+        status:"Active",
+        created_on: createdAt,
+      }
 
-        if (existed.data[0].exists == false) {
-           if (userAuth.emailVerified == true) {
-              try {
-                await createUserProfileInDatabaseVerfied(userAuth,displayName).then(response => console.log("CreatedUser"));
-              }catch (err) {
-                console.log(err);
-              }
-           } 
-        }
+       console.log(data);
 
-  		 return userAuth;
+  		 return {userAuth:userAuth,dataSet:data};
   };
 
   export const CheckIfUserExist = (id) => {
@@ -59,7 +59,18 @@ const config =
    export const createUserProfileInDatabaseVerfied = async (userAuth, additionalData) => {
     if (!userAuth) return;
 
-    let token = GenerateToken();
+
+    axios({
+      url: '/api/userDocumentUpload',
+      method: 'post',
+      
+    }).then(response => {
+      console.log(response);
+    })
+  }
+
+  export const createUserProfileInDatabase = async (userAuth, additionalData) => {
+    if (!userAuth) return;
 
     axios({
       url: '/api/userDocumentUpload',
@@ -71,47 +82,10 @@ const config =
         cart_list:null,
         status:"Active",
         created_on: new Date(),
-        confirmationcode: token,
       }
     }).then(response => {
       console.log(response);
     })
-  }
-
-  export const createUserProfileInDatabase = async (userAuth, additionalData) => {
-    if (!userAuth) return;
-
-    let token = await GenerateToken();
-
-    console.log(additionalData);
-
-    axios({
-      url: '/api/SendConformationEmail',
-      method: 'post',
-      data: {
-        email: userAuth.email,
-        name: additionalData,
-        token: token,
-      }
-    })
-
-    axios({
-      url: '/api/userDocumentUpload',
-      method: 'post',
-      data: {
-        user_id: userAuth.uid,
-        username: additionalData,
-        email: userAuth.email,
-        cart_list:null,
-        status:"Pending",
-        created_on: new Date(),
-        confirmationcode: token,
-      }
-    }).then(response => {
-      console.log(response);
-    })
-
-    window.location.href = "./EmailSended";
   }
 
   export const addCollectionAndDocument = async(collectionName, objects) => {

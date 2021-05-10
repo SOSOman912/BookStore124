@@ -83,9 +83,6 @@ const ProductToRatingsDetail = ({Item,CurrentUser}) => {
 				{title}
 			</HeaderBlockWrap>
 			<HeaderBlockWrap>
-				{quantity}
-			</HeaderBlockWrap>
-			<HeaderBlockWrap>
 				{sale_price}
 			</HeaderBlockWrap>
 			<RatingWrapper>

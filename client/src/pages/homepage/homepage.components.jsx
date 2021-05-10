@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { selectCollectionForPreview } from '../../redux/shop/shop.selectors.js';
+import { selectCollectionForPreview,selectRecommendationlist } from '../../redux/shop/shop.selectors.js';
 import { createStructuredSelector } from 'reselect';
 import CollectionsOverview from '../../components/collections-overview/collections-overview.components.jsx'
 import CollaborativeFilterPreview from '../../components/collaborative-filter-preview/collaborative-filter-preview.component'
@@ -12,20 +12,17 @@ import { HomePageContainer,
 		 SecondSection
  							} from './homepage.styles';
 
-const Homepage = ({Collections,CurrentUser}) => {
+const Homepage = ({Collections,CurrentUser,Recommendationlist}) => {
 	return(
 	<HomePageContainer>
 		<SecondSection>
 			 <PosterContainer/>
 		</SecondSection>
-		{CurrentUser ?
-			CurrentUser.recommendationList?
+		{	Recommendationlist ? 
 				<CollaborativeFilterPreview />
-			:
-				null
-			:   
-				null
+			: null
 		}
+			
 		<CollectionsOverview  />
 	</HomePageContainer>
 		)
@@ -33,7 +30,8 @@ const Homepage = ({Collections,CurrentUser}) => {
 
 const mapStateToProps = createStructuredSelector({
 	Collections: selectCollectionForPreview,
-	CurrentUser: selectCurrentUser
+	CurrentUser: selectCurrentUser,
+	Recommendationlist: selectRecommendationlist
 })
 
 export default connect(mapStateToProps)(Homepage);

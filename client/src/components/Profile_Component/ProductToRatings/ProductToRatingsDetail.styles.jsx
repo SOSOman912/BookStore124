@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 export const ImageContainer = styled.div`
-    width: 23%;
+    width: 25%;
 `
 
 export const Image = styled.img`
@@ -15,7 +15,7 @@ export const ItemContainer = styled.div`
 `
 
 export const HeaderBlockWrap= styled.span`
-  width: 23%;
+  width: 25%;
 `
 
 export const StarRating = styled.div`

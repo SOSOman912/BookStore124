@@ -2,6 +2,8 @@ import shopActionType from './shop.types'
 
 import {fetchingDataFromServerforbasicUse,fetchingDataFromServer} from '../../pages/shop/shopData.fetching.js';
 
+import {fetchingRecommendationListData} from './shop.utils.js';
+
 export const addElaboratedItem = (item) => ({
 	type: shopActionType.ADD_ELABORATED_ITEM,
 	payload: item
@@ -41,6 +43,24 @@ export const fetchCollectionsStartAsync = () => {
 		} 
 	}
 }
+
+export const fetchRecommendationListAsync = (id) => {
+	return dispatch => {
+		try {
+		console.log("Start Fetching Recommendation List");
+		const Basicdata = fetchingRecommendationListData(id)
+		.then(data => dispatch(setRecommendationData(data))
+		);
+		} catch (error) {
+			console.log(error);
+		} 
+	}
+}
+
+export const setRecommendationData = (data) => ({
+	type: shopActionType.SET_RECOMMENDATION_LIST,
+	payload: data
+})
 
 export const changePosterToShow = (number) => ({
 	type:shopActionType.CHANGE_POSTER_TO_SHOW,

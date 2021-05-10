@@ -16,7 +16,7 @@ import Header from './components/header/header.component';
 import { auth, createUserProfileDocument, CheckIfUserExist } from './firebase/firebase.utils';
 import { setCurrentUser } from './redux/cart/cart.actions';
 import { selectCurrentUser } from './redux/cart/cart.selectors';
-import { fetchCollectionsStartAsync} from './redux/shop/shop.actions';
+import { fetchCollectionsStartAsync, fetchRecommendationListAsync,setRecommendationData} from './redux/shop/shop.actions';
 import axios from 'axios';
 import EmailRegistrationPage from './pages/Email/Email.components.jsx';
 import PortfolioPage from './pages/portfolio/portfolio.component.jsx';
@@ -27,7 +27,7 @@ class App extends React.Component {
   unsubscribeFromAuth = null;
 
   componentDidMount() {
-    const { setCurrentUser,fetchCollectionsStartAsync,fetchBuyingHistoryStartAsync } = this.props;
+    const { setRecommendationData,setCurrentUser,fetchCollectionsStartAsync,fetchBuyingHistoryStartAsync,fetchRecommendationListAsync} = this.props;
     fetchCollectionsStartAsync();
 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
@@ -35,15 +35,15 @@ class App extends React.Component {
         const userRef = await createUserProfileDocument(userAuth).then(response => 
           axios.get('/api/login', {
             params: {
-              user_id: response.uid
+              user_id: response.userAuth.uid,
+              data: response.dataSet
             }
-          })).then(response => {setCurrentUser(response.data); fetchBuyingHistoryStartAsync(response.data.id) }).catch(error=> {
-         if (error.response.status == 401) {
-          console.log("Your account has not yet verifyed!");
-         } 
+          })).then(response => {setCurrentUser(response.data); fetchBuyingHistoryStartAsync(response.data.id); fetchRecommendationListAsync(response.data.id)}).catch(error=> {
+          console.log(error);
         });
       } else {
           setCurrentUser(userAuth);
+          setRecommendationData([]);
       }
     });
 
@@ -85,9 +85,11 @@ const mapStateToProps = createStructuredSelector({
 })
 
 const mapDispatchToProps = dispatch => ({
+  setRecommendationData: list => dispatch(setRecommendationData(list)),
   setCurrentUser: user => dispatch(setCurrentUser(user)),
   fetchCollectionsStartAsync:  () => dispatch(fetchCollectionsStartAsync()),
-  fetchBuyingHistoryStartAsync: currentUser => dispatch(fetchBuyingHistoryStartAsync(currentUser))
+  fetchBuyingHistoryStartAsync: currentUser => dispatch(fetchBuyingHistoryStartAsync(currentUser)),
+  fetchRecommendationListAsync: id => dispatch(fetchRecommendationListAsync(id))
 });
 
 export default connect(

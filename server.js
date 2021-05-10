@@ -8,22 +8,33 @@ if (process.env.NODE_ENV !== 'production') require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { dialogflow, Image, } = require('actions-on-google')
 const express = require('express');
-
+const router = express.Router();
 
 const collaborativeFilter = require('./collaborative_filtering/script.js');
 const fs = require('fs');
 const SendingConfirmationEmail = require('./SendingEmail/ConfirmationEmail.js');
 
-
 const app = express();
+
 const port = process.env.PORT || 5000
 
-const pool = new Pool({
+const pool1 = new Pool({
     connectionString: 'postgres://eznxnvpxfqdhmm:3eaeb97fb42d2c9ab35defcbbcc0fad1f34e31aba5c2f9c1371cda56f70d4440@ec2-52-45-73-150.compute-1.amazonaws.com:5432/d7mefmitu75ame',
     ssl: {
       rejectUnauthorized:false
     }
   });
+
+const pool2 = new Pool({
+    connectionString: 'postgres://rzoqfwkemnrmkm:14c1f8e2a97d8566f7d8a104a5ba46b409bea0700c0110072877a67e2c7599fb@ec2-54-87-112-29.compute-1.amazonaws.com:5432/d9t8saa1bg24gm',
+    ssl: {
+      rejectUnauthorized:false
+    }
+  });
+
+process.on('uncaughtException', function (err) {
+    throw (err);
+}); 
 
 app.use(session({
   secret: 'Igotoschoolbybus',
@@ -34,51 +45,55 @@ app.use(session({
 
 var booksinformation ;
 
-const SetRatingToJsonFile = async(data) => {
-  let rawdata = fs.readFileSync('./collaborative_filtering/data.json');
-  let ratings = await JSON.parse(rawdata);
-  console.log(data.UserId);
-  if (ratings[data.UserId]) {
-      ratings[data.UserId][data.bookid] = data.Rating;
-  } else {
-    ratings[data.UserId] = {}
-    ratings[data.UserId][data.bookid] = data.Rating;
+const SetRatingToPostgresql = async(data) => {
+    console.log("SetRating - Setting Rating to postgresq");
+    const query = `INSERT INTO ratinglist (book_id,user_id,rating) VALUES ('${data.bookid}','${data.UserId}','${data.Rating}')`
+    try{
+      const client = await pool2.connect();
+      await client.query(query);
+      client.release()
+      console.log("SetRating - Setting finish");
+    } catch (err) {
+      throw (err);
   }
-  
-  json = JSON.stringify(ratings);
-  fs.writeFile('./collaborative_filtering/data.json', json, function (err) { if (err) throw err;});
-} 
+}
+
 
 const UploadingDataToPostgreSQL = async(data) => {
   console.log("create new accout, account Info:",data);
-  const query = `INSERT INTO customerinformation (user_id, username, email, cart_list, created_on, status, confirmationcode)VALUES('${data.user_id}','${data.username}','${data.email}','${data.cart_list}','${data.created_on}','${data.status}','${data.confirmationcode}')`;
+  var data = JSON.parse(data);
+  const query = `INSERT INTO customerinformation (user_id, username, email, cart_list, created_on, status)VALUES('${data.user_id}','${data.username}','${data.email}','${data.cart_list}','${data.created_on}','${data.status}')`;
   try {
-    const client = await pool.connect();
+    const client = await pool1.connect();
     client.query(query);
+    client.release()  
   } catch (err) {
-    console.log(err);
-  }
+    console.log("account already exist");
+  } 
 }
 
 const GetcustomerDatabase = async(data) => {
   const query = `SELECT * FROM customerinformation`
   try {
-    const client = await pool.connect();
+    const client = await pool1.connect();
     const res = await client.query(query);
+    client.release()
     return res.rows;
   } catch (err) {
-    console.log(err);
+    throw (err);
   }
 }
 
 const GetcustomerInformation = async(data) => {
   const query = `SELECT * FROM customerinformation WHERE user_id = '${data}'`
   try {
-    const client = await pool.connect();
+    console.log("GETcustomerinformatinstart - feching start");
+    const client = await pool1.connect();
     const res = await client.query(query);
+    client.release()
     return res.rows;
   } catch (err) {
-    console.log(err);
+    console.log (err);
   }
 }
 
@@ -86,12 +101,12 @@ const GetcustomerInformation = async(data) => {
 //     const query = `SELECT * FROM booksinformation WHERE id < 100` ;
 //   try {
     
-//     const client = await pool.connect();
+//     const client = await pool1.connect();
 //     const res = await client.query(query);
 //     return res.rows;
 
 //   } catch (err) {
-//     console.log(err);
+//     throw (err);
 //   }
 // }
 
@@ -104,8 +119,9 @@ const RetrievingDatasFromPostgreSQL = async() => {
 const CheckIfCustomerExisted = async(data) => {
   const query = `SELECT EXISTS(SELECT true FROM customerinformation WHERE user_id = '${data}')`
   try {
-    const client = await pool.connect();
+    const client = await pool1.connect();
     const res = await client.query(query);
+    client.release()
     return res.rows;
   } catch (err) {
     console.log(err);
@@ -120,13 +136,14 @@ const AddingShoesToCartList = async(data,itemlist) => {
   const query = `UPDATE customerinformation SET cart_list = '${itemlist}' WHERE user_id = '${data.user_id}'`
   console.log(query);
   try {
-    const client = await pool.connect();
+    const client = await pool1.connect();
     const res = await client.query(query);
     console.log('CartList Update SUCCESS');
-    console.log(res.rows);
+    client.release()
     return res.rows;
+    client.end();
   } catch (err) {
-    console.log(err);
+    throw (err);
   }
 }
 
@@ -134,35 +151,38 @@ const ActiveAccount = async(data) => {
   const query = `UPDATE customerinformation SET status = 'Active' WHERE confirmationcode = '${data.params.confirmationCode}'`
   console.log(query);
   try {
-    const client = await pool.connect();
+    const client = await pool1.connect();
     const res = await client.query(query);
-    console.log(res);
+    client.release()
   } catch (err) {
-    console.log(err);
+    throw (err);
   }
 }
 
 const UpdateHistory = async(data) => {
   const query = `INSERT INTO order_log (id, customer_id, created_at, updated_at, rating, items)VALUES('${data.id}','${data.customer_id}','${data.created_at}','${data.updated_at}','${data.Rating}','${data.Items}')`;
   try {
-    const client = await pool.connect();
-    const res = await client.query(query);
-    console.log('History Update SUCCESS');
+    const client = await pool1.connect();
+    await client.query(query);
+    console.log("UpdateHistory - UpdateCompleted")
+    client.release()
   } catch (err) {
-    console.log(err);
+    throw (err);
   }
 }
 
 const GetBuyingHistory = async(data) => {
   const query = `SELECT * FROM order_log WHERE customer_id = '${data.id}'`
   try {
-    const client = await pool.connect();
+    const client = await pool1.connect();
     const res = await client.query(query);
+    client.release()
     return res.rows
   } catch (err) {
-    console.log(err);
+    throw (err);
   }
 }
+ 
 
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb'}));
@@ -180,8 +200,6 @@ app.post('/payment', (req, res) => {
     amount: req.body.amount,
     currency: 'usd'
   };
-
-  console.log(body);
 
   stripe.charges.create(body, (stripeErr, stripeRes) => {
     if (stripeErr) {
@@ -240,10 +258,8 @@ const dialogflowFulfillment = async(request, response) => {
     }
 
 
-    const RandomRatingBook = (agent) => {
-      var productdata = app.get("booksinformation");
-
-      console.log(productdata);
+    const RandomRatingBook = async(agent) => {
+      var ProductData = await RetrievingDatasFromPostgreSQL();
 
       var number = app.get("RandomBookNumber");
 
@@ -265,9 +281,7 @@ const dialogflowFulfillment = async(request, response) => {
         return;
       }
 
-      var Sortedproductdata = productdata.sort(compare);
-
-      app.set("booksinformation",productdata);
+      var Sortedproductdata = ProductData.sort(compare);
 
       app.set("RandomBookNumber",number);
 
@@ -370,10 +384,10 @@ const dialogflowFulfillment = async(request, response) => {
       }
 
       console.log("Item to added to database with chatbot:",snapshot)
-      var Origincartlist = app.get('updatedCartlist');
+      var Origincartlist = app.get('CurrentCartListState');
       console.log("CurrentCartListState:",Origincartlist);
-      var AddedToDatabaseWithChatbot = Origincartlist.push(snapshot);
-      app.set('updatedCartlist',AddedToDatabaseWithChatbot);      
+      Origincartlist.push(snapshot);
+      app.set('CurrentCartListState',Origincartlist);    
       var currentUser = app.get('currentUser');
       console.log(currentUser);
       const itemlist = JSON.stringify(Origincartlist);
@@ -398,10 +412,10 @@ const dialogflowFulfillment = async(request, response) => {
       }
 
       console.log("Item to added to database with chatbot:",snapshot)
-      var Origincartlist = app.get('updatedCartlist');
+      var Origincartlist = app.get('CurrentCartListState');
       console.log("CurrentCartListState:",Origincartlist);
-      var AddedToDatabaseWithChatbot = Origincartlist.push(snapshot);
-      app.set('updatedCartlist',AddedToDatabaseWithChatbot);      
+      Origincartlist.push(snapshot);
+      app.set('CurrentCartListState',Origincartlist);      
       var currentUser = app.get('currentUser');
       console.log(currentUser);
       const itemlist = JSON.stringify(Origincartlist);
@@ -445,9 +459,9 @@ const dialogflowFulfillment = async(request, response) => {
         }
       }
 
-      
+    console.log("Specific Books Recommendation",Requirement);
     
-     app.set("Requirement",Requirement);
+    app.set("Requirement",Requirement);
 
      const payload = {
         "richContent": [
@@ -482,6 +496,9 @@ const dialogflowFulfillment = async(request, response) => {
         isbn:null
         }
       }
+
+
+      console.log("Specific Books Recommendation",Requirement);
       
       app.set("Requirement",Requirement);
 
@@ -508,9 +525,11 @@ const dialogflowFulfillment = async(request, response) => {
     const ReceiveAuthors = async(agent) => {
       var list = app.get("specificbooklist");
 
+      console.log("ChatBookRecommendation:",list);
+
       if (list == undefined) {
           var Requirement = app.get("Requirement");
-          var booksinformation = app.get("booksinformation");
+          var booksinformation = await RetrievingDatasFromPostgreSQL();
           if (request.body.queryResult.parameters.authors) {
             var Requirement = {
             ...Requirement,
@@ -523,11 +542,14 @@ const dialogflowFulfillment = async(request, response) => {
             }
           }
 
+        console.log("Specific Books Recommendation",Requirement);
+
+        console.log(Requirement);
+
         var list = booksinformation.filter(book => Requirement.id != null ? book.id === Requirement.id : book).filter(book => Requirement.isbn != null ? book.isbn == Requirement.isbn : book).filter(book => Requirement.authors != null ? book.authors == Requirement.authors.name : book );
 
-        console.log(list);
+        console.log("Specific Books Recommendation list",list);
 
-        app.set("booksinformation",booksinformation);
       }
 
       console.log(list);
@@ -536,15 +558,22 @@ const dialogflowFulfillment = async(request, response) => {
 
     var number = app.get("specificRequirementNumber");
 
-    if (number == undefined) {
+    console.log(number);
+
+    if (list.length = 1) {
+      var number = 0;
+    } else if (number == undefined){
       var number = 0;
     } else {
-      number = number + 1;
+        number = number + 1;
     }
+    
 
     var product = list[number];
 
     var listlength = list.length;
+
+    console.log(number);
 
     app.set("specificRequirementNumber",number);
 
@@ -581,17 +610,17 @@ const dialogflowFulfillment = async(request, response) => {
 
 
     let intentMap = new Map();
+    intentMap.set("SpecificBook - Receive id", ReceiveId);
+    intentMap.set("SpecificBook - Receive isbn", ReceiveIsbn);
+    intentMap.set("SpecificBook - Receive authors", ReceiveAuthors);
+    intentMap.set("SpecificBook - AddBookToCartlist", AddingSpecificBooksToCartListWithChatBot);
+    intentMap.set("AnotherSpecificBook",ShowAnotherSpecificBook);
     intentMap.set("Welcome", Welcome);
     intentMap.set("Lookforproduct", Lookforproduct);
     intentMap.set("randombook", RandomBook);
     intentMap.set("RandomBook - Rating",RandomRatingBook);
     intentMap.set("AddBooksToCart", AddingBooksToCartListWithChatBot);
     intentMap.set("SpecificBook", SpecificBook);
-    intentMap.set("SpecificBook - Receive id", ReceiveId);
-    intentMap.set("SpecificBook - Receive isbn", ReceiveIsbn);
-    intentMap.set("SpecificBook - Receive authors", ReceiveAuthors);
-    intentMap.set("SpecificBook - AddBookToCartlist", AddingSpecificBooksToCartListWithChatBot);
-    intentMap.set("AnotherSpecificBook",ShowAnotherSpecificBook);
 
 
     agent.handleRequest(intentMap)
@@ -600,27 +629,35 @@ const dialogflowFulfillment = async(request, response) => {
 app.get('/api/getData', async(req, res) => { 
     var ResData = await RetrievingDatasFromPostgreSQL();
     app.set("booksinformation",ResData);
-    const booksinformation = ResData;
     req.session.BookData = ResData;
     res.send(ResData);  
 })
 
 app.post('/api/updatecartlist', async(req,res) => {
-
-    console.log(req.body);
-    const snapshot = req.body.cartlist.map(item => (
-          {
-            product_id: item.id,
-            quantity: item.quantity
-          } 
-        ));
-    const itemlist = JSON.stringify(snapshot);
-    app.set('updatedCartlist',snapshot);
-    AddingShoesToCartList(req.body.users,itemlist);
+    try {
+      const snapshot = req.body.cartlist.map(item => (
+            {
+              product_id: item.id,
+              quantity: item.quantity
+            } 
+          ));
+      const itemlist = JSON.stringify(snapshot);
+      app.set('updatedCartlist',snapshot);
+      AddingShoesToCartList(req.body.users,itemlist);
+      res.status(200).send({ success: "Update success" });
+    } catch (err) {
+      res.status(500).send({ error: err });
+    }
 })
 
 app.post('/api/userDocumentUpload', (request, response) => {
+  try{
+  console.log(request.body);
   UploadingDataToPostgreSQL(request.body);  
+  response.status(200).send({ success: "Upload success" });
+  } catch (err) {
+    response.send(500).send({error:err});
+  }
 });
 
 app.get("/confirm/:token", (request, response) => {
@@ -629,35 +666,50 @@ app.get("/confirm/:token", (request, response) => {
 
 app.post('/api/SendConformationEmail', (request, response) => {
   SendingConfirmationEmail.sendConfirmationEmail(request.body);
+    response.end("Request Finish");
 })
 
 app.post('/api/SetRating', (request, response) => {
-  SetRatingToJsonFile(request.body);
+  try{
+    SetRatingToPostgresql(request.body);
+    response.status(200).send({success: "SetRatingSuccess"})
+  } catch (err) {
+    response.status(500).send({error: err});
+  }
 })
 
 app.post('/api/updateHistory', (request, response) => {
-  const CList = request.body.Items.map(item => ({
-    product_id: item.id,
-    quantity: item.quantity,
-    Rating: false
-  }));
+  try{
+      const customerData = app.get("currentUser")
+      const CList = request.body.Items.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          Rating: false
+        }));
 
-  const CCList = JSON.stringify(CList);
+      const CCList = JSON.stringify(CList);
 
-  const snapshot = {
-    customer_id: request.session.currentUser[0].id,
-    Items: CCList,
-    id: request.body.id,
-    created_at: request.body.created_at,
-    updated_at: request.body.updated_at,
-    Rating: request.body.Rating
+      const snapshot = {
+          customer_id: customerData[0].id,
+          Items: CCList,
+          id: request.body.id,
+          created_at: request.body.created_at,
+          updated_at: request.body.updated_at,
+          Rating: request.body.Rating
+        }
+
+      app.set("currentUser",customerData);
+
+      UpdateHistory(snapshot);
+
+      response.status(200).send({success: "UploadhistorySuccess"});
+  } catch (err) {
+      response.status(500).send({error: err});
   }
-
-  UpdateHistory(snapshot);
 });
 
 app.get('/api/getBuyingHistory', async(request, response) => {
-    console.log("Start Fetching Buying History");
+    console.log("BuyingHistory - Start Fetching Buying History");
     var data = await GetBuyingHistory(request.query);
     var ProductData = await RetrievingDatasFromPostgreSQL();
 
@@ -671,95 +723,111 @@ app.get('/api/getBuyingHistory', async(request, response) => {
 
       data[i].items = TranformingCartList;
     }
+    console.log("BuyingHistory - Fetched Finished");
+
     response.send(data);
 })
 
 app.get('/api/login', async (request, response) => {
-  const userid = request.query.user_id;
-  console.log("Login - Starting login function:",userid);
+  try {
 
-  if(userid == null) {
-    return [];
-  }
+    const userid = request.query.user_id;
 
-  console.log('Login - Get userID, starting fetching');
-  var ProductData = await RetrievingDatasFromPostgreSQL();
-  console.log('Login - Get Product Data');
+    var existed = await CheckIfCustomerExisted(userid) 
 
-  for (var i = 0; i < 100; i++) {
-    if (customerdata == null) {
-        setTimeout(function() {console.log("Login - Trying to get customer data");},1000);
-        var customerdata = await GetcustomerInformation(userid);
+    console.log(existed);
 
-    } else {
-      console.log("Login - Customer Get:",customerdata);
-      break;
-    }
-  }
-
-  var recommendationList = collaborativeFilter.recomendation_eng(customerdata[0].id);
-
-  console.log("customer RawData",customerdata[0].cart_list);
-
-  if(!customerdata[0].cart_list == null) { 
-    console.log("Transforming cartList ......")
-    var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
-      for (var i = 0; i< ProductData.length; i++) {
-        if (cartItem.product_id == ProductData[i].id) {
-          return {...ProductData[i], quantity: cartItem.quantity};
-        }}})}
-    else {
-      console.log("CartList is currently Null");
-      var TranformingCartList = [];
+    if (existed[0].exists == false) {
+      console.log("Login - Can't find customer account...")
+      await UploadingDataToPostgreSQL(request.query.data);
     }
 
-    if(!recommendationList == null) {
-            var TransformingRecommendationList = recommendationList[1].map(recommendationItem => {
-          for ( var i = 0; i< ProductData.length; i++ ) {
-            if (recommendationItem == ProductData[i].id) {
-              return {...ProductData[i]}
-            }
-          }
-        })
-          } else {
-            var TransformingRecommendationList = null;
-          }
-  
+    console.log("Login - Starting login function:",userid);
 
-  request.session.currentUser = customerdata;
+    if(userid == null) {
+      return [];
+    }
 
-  app.set("currentUser",customerdata);
-  app.set("updatedCartlist",TranformingCartList);
-  console.log('fetching finish, returning data');
-  
-  const ResData = {
-    id: customerdata[0].id,
-    user_id: customerdata[0].user_id,
-    username: customerdata[0].username,
-    email: customerdata[0].email,
-    cart_list: TranformingCartList,
-    recommendationList: TransformingRecommendationList  
+    console.log('Login - Get userID, starting fetching');
+    var ProductData = await RetrievingDatasFromPostgreSQL();
+    console.log('Login - Get Product Data');
+
+    console.log("Login - Trying to get customer data");
+    var customerdata = await GetcustomerInformation(userid).catch(error => console.log(error));
+    console.log("Login - Customer Get:",customerdata);
+
+    if(!customerdata[0].cart_list == []) { 
+      console.log("Transforming cartList ......")
+      var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
+        for (var i = 0; i< ProductData.length; i++) {
+          if (cartItem.product_id == ProductData[i].id) {
+            return {...ProductData[i], quantity: cartItem.quantity};
+          }}})}
+      else {
+        console.log("CartList is currently Null");
+        var TranformingCartList = [];
+      }
+
+    request.session.currentUser = customerdata;
+
+    app.set("currentUser",customerdata);
+    app.set("updatedCartlist",TranformingCartList);
+    app.set("CurrentCartListState",customerdata[0].cart_list)
+    console.log('fetching finish, returning data');
+    
+    const ResData = {
+      id: customerdata[0].id,
+      user_id: customerdata[0].user_id,
+      username: customerdata[0].username,
+      email: customerdata[0].email,
+      cart_list: TranformingCartList,
+    }
+
+    console.log("customer to login:",ResData.cart_list);
+
+    response.send(ResData);
+  }catch (err){
+    throw (err);
   }
-
-  console.log("customer to login:",ResData.cart_list);
-
-  response.send(ResData);
+  
 });
+
+app.get('/api/fetchRecommendationList', async (request,response) => {
+    var ProductData = await RetrievingDatasFromPostgreSQL();
+    console.log("ID:",request.query.id)
+    var recommendationList = await collaborativeFilter.recomendation_eng(request.query.id)
+
+    if(!recommendationList == []) {
+      var TransformingRecommendationList = recommendationList.map(recommendationItem => {
+           
+            for ( var i = 0; i< ProductData.length; i++ ) {
+              if (recommendationItem == ProductData[i].id) {
+                return {...ProductData[i]}
+              }
+            }
+          })
+            } else {
+              console.log("recommendationList is null")
+              var TransformingRecommendationList = [];
+            }   
+    response.send(TransformingRecommendationList);
+})
 
 app.get('/api/checkifexist', async (request,response) => {
   var ResData = await CheckIfCustomerExisted(request.query.user_id);
   response.send(ResData);
-})
+})      
 
 if (process.env.NODE_ENV === 'production') {
+  app.use(enforce.HTTPS({ truestProtoHeader: true}))
   app.use(express.static(path.join(__dirname, 'client/build')));
 
-  app.get('*', function(req, res) {
+  app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, 'client/public', 'index.html'));
   });
 }
 
-pool.on('error', (err, client) => {
+pool1.on('error', (err, client) => {
   console.error('Error:',err);
 });
 

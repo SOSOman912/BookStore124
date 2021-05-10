@@ -9,6 +9,7 @@ const INITIAL_STATE = {
 	PosterToshow: 1,
 	Categoryhidden: true,
 	LoginMessagehidden: true,
+	recommendationList: []
 }
 
 const shopReducer = ( state = INITIAL_STATE, action) => {
@@ -61,6 +62,11 @@ const shopReducer = ( state = INITIAL_STATE, action) => {
 			return {
 				...state,
 				LoginMessagehidden: !state.LoginMessagehidden
+			}
+		case shopActionType.SET_RECOMMENDATION_LIST:
+			return {
+				...state,
+				recommendationList: action.payload
 			}
 		default:
 			return state;

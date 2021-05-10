@@ -1,12 +1,15 @@
 const fs = require('fs')
+const { Pool, Client } = require("pg");
 
-ratingsdataset = function() {
-	let rawdata = fs.readFileSync('./collaborative_filtering/data.json');
-	let ratings = JSON.parse(rawdata);
-	return ratings;
-}
+const pool2 = new Pool({
+    connectionString: 'postgres://rzoqfwkemnrmkm:14c1f8e2a97d8566f7d8a104a5ba46b409bea0700c0110072877a67e2c7599fb@ec2-54-87-112-29.compute-1.amazonaws.com:5432/d9t8saa1bg24gm',
+    ssl: {
+      rejectUnauthorized:false
+    }
+  });
 
 var pearson_correlation = function(dataset,p1,p2) {
+
 	var existp1p2 = {};
 
 	for (item in dataset[p1]){
@@ -71,7 +74,44 @@ var similar_user = function(dataset,person,num_user,distance) {
    return score;
 }
 
-module.exports.recomendation_eng = function(person) {
+module.exports.recomendation_eng = async function(person) {
+		console.log("Person",person)
+
+		const Transformdataset = async(dataset) => {
+			var Object1 = dataset
+
+			var Object2 = Object1.map(item => {
+				return {
+					user_id: item.user_id,
+					rating:{[item.book_id]:item.rating}
+				}
+			})
+
+			var Object3 = {};
+
+			Object2.forEach(function(item) {
+				var existing = Object3[item.user_id];
+				if (existing) {
+					Object3[item.user_id] = Object.assign(Object3[item.user_id],item.rating); 
+				} else {
+					var Object4 = {[item.user_id]:item.rating};
+					Object.assign(Object3,Object4);
+				}
+			})
+			return Object3;
+		}
+
+		const GetcustomerDatabase = async(data) => {
+		  const query = `SELECT * FROM ratinglist`
+		  try {
+		    const client = await pool2.connect();
+		    const res = await client.query(query);
+		    return res.rows;
+		  } catch (err) {
+		    console.log(err);
+		  }
+		}
+
 		euclidean_score = function(dataset,p1,p2){
 		var existp1p2 = {};
 
@@ -84,7 +124,6 @@ module.exports.recomendation_eng = function(person) {
 			}
 
 		var sum_of_euclidean_dist = [];
-
 			for(item in dataset[p1]){
 				if(item in dataset[p2]){
 					sum_of_euclidean_dist.push(Math.pow(dataset[p1][item]-dataset[p2][item],2))
@@ -102,10 +141,12 @@ module.exports.recomendation_eng = function(person) {
 		}
 	}	
 
-	var dataset = ratingsdataset();
+	var dataset = await GetcustomerDatabase();
 
-	if (!dataset[person]) {
-		return null;
+	var TransformedDataset = await Transformdataset(dataset);
+
+	if (!TransformedDataset[person]) {
+		return
 	}
 
 	var totals = {
@@ -128,21 +169,19 @@ module.exports.recomendation_eng = function(person) {
 		},
 	rank_lst = [];
 
-for (var other in dataset) {
+for (var other in TransformedDataset) {
 	if(other === person) continue;
+	var similar = euclidean_score(TransformedDataset,person,other);
 
-	var similar = euclidean_score(dataset,person,other);
 	if(similar <= 0) continue;
 
-	for(var item in dataset[other]){
-		if(!(item in dataset[person])||(dataset[person][item]==0)){
-			totals.setDefault(item,dataset[other][item]*similar);
+	for(var item in TransformedDataset[other]){
+		if(!(item in TransformedDataset[person])||(TransformedDataset[person][item]==0)){
+			totals.setDefault(item,TransformedDataset[other][item]*similar);
 			simsum.setDefault(item,similar);
 		}
 	}
 }
-
-
 
 for(var item in totals){
 	if(typeof totals[item] != "function"){
@@ -151,15 +190,19 @@ for(var item in totals){
 	}
 }
 
+
 rank_lst.sort(function(a,b){
 	return b.val < a.val ? -1 : b.val > a.val ?
 	1 : b.val >= a.val ? 0 : NaN;
 });
+
+
 var recommend = [];
 	for (var i in rank_lst) {
 		recommend.push(rank_lst[i].items);
 	}
-	return [rank_lst,recommend];
+
+	return recommend;
 
 }
 

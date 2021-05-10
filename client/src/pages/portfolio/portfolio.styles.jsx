@@ -4,6 +4,14 @@ export const PortFolioPageContainer = styled.div`
 	font-family: 'Noto Sans', sans-serif;
 	width:1525px;
 	height:100%;
+
+	@media (max-width: 1920px) {
+	  	width:1152px;
+	  }
+
+	@media (max-width: 1280px) {
+	  	width:768px;
+	}
 `
 
 export const PortFolioContentContainer = styled.div`
@@ -30,7 +38,17 @@ export const FirstSection = styled.div`
 `
 
 export const SecondSection = styled.div`
-	width:80%:
+	width:1067.5px;
+
+	@media (max-width: 1920px) {
+	  	width:806.4px;
+	  }
+
+	@media (max-width: 1280px) {
+	  	width:537.6px;
+	}
+
+
 	height:100%;
 `
 

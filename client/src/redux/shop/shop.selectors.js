@@ -56,3 +56,8 @@ export const selectLoginMessageHidden = createSelector(
 	[selectshop],
 	shop => shop.LoginMessagehidden
 	)
+
+export const selectRecommendationlist = createSelector(
+	[selectshop],
+	shop => shop.recommendationList
+	)
