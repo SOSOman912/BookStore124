@@ -1,12 +1,47 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "BookStore124",
+  "name": "BookStore124",
   "icons": [
     {
-      "src": "favicon.ico",
+      "src": "icon_512.ico",
+      "sizes": "512x512",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon_256.ico",
+      "sizes": "256x256",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon_128.ico",
+      "sizes": "128x128",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon_96.ico",
       "sizes": "64x64 32x32 24x24 16x16",
       "type": "image/x-icon"
-    }
+    },
+    {
+      "src": "icon_72.ico",
+      "sizes": "72x72",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon_64.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon_48.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon_32.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
+    },
   ],
   "start_url": ".",
   "display": "standalone",

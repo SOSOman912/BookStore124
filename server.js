@@ -9,6 +9,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { dialogflow, Image, } = require('actions-on-google')
 const express = require('express');
 const router = express.Router();
+const enforce = require('express-sslify');
 
 const collaborativeFilter = require('./collaborative_filtering/script.js');
 const fs = require('fs');
@@ -42,8 +43,6 @@ app.use(session({
   resave: true,
   saveUninitialized: true
 }));
-
-var booksinformation ;
 
 const SetRatingToPostgresql = async(data) => {
     console.log("SetRating - Setting Rating to postgresq");
@@ -791,6 +790,10 @@ app.get('/api/login', async (request, response) => {
   }
   
 });
+
+app.get('/service-worker.js', (req,res) => {
+  res.sendFIle(path.resolve(__dirname, '..', 'build', 'service-worker.js'));
+})
 
 app.get('/api/fetchRecommendationList', async (request,response) => {
     var ProductData = await RetrievingDatasFromPostgreSQL();
