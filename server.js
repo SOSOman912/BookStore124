@@ -822,7 +822,7 @@ app.get('/api/checkifexist', async (request,response) => {
 })      
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(enforce.HTTPS({ truestProtoHeader: true}))
+  // app.use(enforce.HTTPS({ truestProtoHeader: true}))
   app.use(express.static(path.join(__dirname, 'client/build')));
 
   app.get('/', function(req, res) {
