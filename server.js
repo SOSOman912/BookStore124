@@ -793,7 +793,7 @@ app.get('/api/login', async (request, response) => {
 
 app.get('/service-worker.js', (req,res) => {
   console.log("serviceworker");
-  res.sendFile(path.resolve(__dirname, '..', 'bookstore124/client/src', 'service-worker.js'));
+  res.sendFile(path.resolve(__dirname, '..', 'bookstore124/client/src','registerServiceWorker.js'));
 })
 
 app.get('/api/fetchRecommendationList', async (request,response) => {
