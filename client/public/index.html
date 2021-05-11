@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1m shrink-to-fit=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1 m shrink-to-fit=no" />
     <meta name="theme-color" content="#000000" />
     <link rel="manifest" href="./manifest.json" />
     <link
@@ -25,14 +25,5 @@
     agent-id="dc17f120-4a0a-494a-bb0f-8eee7b043360"
     language-code="en"
 ></df-messenger>
-    <script>
-        if('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-            .then((reg) => console.log('Success: ', reg.scope))
-            .catch((err) => console.log('Failure: ',err))
-          })
-        }
-    </script>
   </body>
 </html>
