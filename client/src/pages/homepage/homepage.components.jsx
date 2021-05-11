@@ -7,7 +7,6 @@ import CollaborativeFilterPreview from '../../components/collaborative-filter-pr
 import {selectCurrentUser} from '../../redux/cart/cart.selectors.js' 
 
 import { HomePageContainer,
-		 FirstSection,
 		 PosterContainer,
 		 SecondSection
  							} from './homepage.styles';

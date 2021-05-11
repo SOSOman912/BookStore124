@@ -792,7 +792,8 @@ app.get('/api/login', async (request, response) => {
 });
 
 app.get('/service-worker.js', (req,res) => {
-  res.sendFIle(path.resolve(__dirname, '..', 'build', 'service-worker.js'));
+  console.log("serviceworker");
+  res.sendFile(path.resolve(__dirname, '..', 'bookstore124/client/src', 'service-worker.js'));
 })
 
 app.get('/api/fetchRecommendationList', async (request,response) => {
@@ -822,7 +823,7 @@ app.get('/api/checkifexist', async (request,response) => {
 })      
 
 if (process.env.NODE_ENV === 'production') {
-  // app.use(enforce.HTTPS({ truestProtoHeader: true}))
+  app.use(enforce.HTTPS({ truestProtoHeader: true}))
   app.use(express.static(path.join(__dirname, 'client/build')));
 
   app.get('/', function(req, res) {

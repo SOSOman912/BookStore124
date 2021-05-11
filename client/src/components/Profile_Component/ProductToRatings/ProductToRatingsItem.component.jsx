@@ -1,9 +1,6 @@
 import React from 'react';
 
 import { ProductToRatingsItemContainer,
-		 Title,
-		 Data,
-		 ContentContainer,
 		 CheckoutHeaderWrap,
 		 HeaderBlockWrap
 		} from './ProductToRatingsItem.styles'
@@ -11,7 +8,7 @@ import { ProductToRatingsItemContainer,
 import ProductToRatingsDetail from './ProductToRatingsDetail.component';
 
 const ProductToRatingsItem = ({cartItem}) => {
-	const { id, customer_id, updated_at,created_at, items,rating} = cartItem;
+	const {items} = cartItem;
 	return (
 		<ProductToRatingsItemContainer>
 			<CheckoutHeaderWrap >

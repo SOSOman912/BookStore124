@@ -53,7 +53,7 @@ function SetRating(id,UserId,Rating) {
 }
 
 const ProductToRatingsDetail = ({Item,CurrentUser}) => {
-	const {small_image_url,title,quantity,sale_price,id} = Item
+	const {small_image_url,title,sale_price,id} = Item
 
 	const UserId = CurrentUser.id;
 

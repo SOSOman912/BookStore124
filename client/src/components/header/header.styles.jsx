@@ -10,6 +10,10 @@ export const HeaderContainer = styled.div`
     border:none;
     display:flex;
     justify-content:space-between;
+
+    @media (max-width:360px) {
+        
+    }
 `
 
 export const LogoContainer = styled(Link)`

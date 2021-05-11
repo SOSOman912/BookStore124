@@ -8,7 +8,6 @@ import CartDropDown from '../cart-dropdown/cart-dropdown.component';
 import { selectCartHidden,selectCurrentUser } from '../../redux/cart/cart.selectors';
 import { LinkContainer, LOGO, LogoContainer,  HeaderContainer, OptionsContainer, OptionLink } from './header.styles.jsx'
 import { togglecategoryhidden } from '../../redux/shop/shop.actions';
-import CategoryDropDown  from '../category-dropdown/category-dropdown.component';
 import { selectCategoryhidden } from '../../redux/shop/shop.selectors';
 import { withRouter } from 'react-router-dom'
 const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden,history}) => {

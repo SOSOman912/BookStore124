@@ -6,7 +6,7 @@ import { auth, SignInWithGoogle } from '../../firebase/firebase.utils';
 
 import FormInput from '../form-input/form-input-component';
 
-import { SignInWrap, SignInTitle, ButtonsBarWrap ,WarningMessageWrap,WarningMessageBG, WarningMessageMG} from './sign-in.styles'
+import { SignInWrap, SignInTitle, ButtonsBarWrap} from './sign-in.styles'
 
 class SignIn extends React.Component {
 	constructor(props){

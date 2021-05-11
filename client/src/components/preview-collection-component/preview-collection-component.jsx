@@ -2,7 +2,7 @@ import React from 'react'
 
 import CollectionItem from '../collectionItems/collectionItem.component.jsx'
 
-import { CollectionPreviewWrap, TitleWrap, PreviewWrap } from './preview-collection-style'
+import { CollectionPreviewWrap, PreviewWrap } from './preview-collection-style'
 
 const CollectionPreview = ({collections}) => (
 	<CollectionPreviewWrap className='collection-preview'>

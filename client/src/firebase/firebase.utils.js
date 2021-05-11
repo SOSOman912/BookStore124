@@ -16,21 +16,21 @@ const config =
 
   firebase.initializeApp(config);
 
-  const GenerateToken = function () {
-  const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let token = '';
-  for (let i = 0; i < 25; i++) {
-    token += characters[Math.floor(Math.random() * characters.length)];
-  }
-  return token;
-} 
+//   const GenerateToken = function () {
+//   const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+//   let token = '';
+//   for (let i = 0; i < 25; i++) {
+//     token += characters[Math.floor(Math.random() * characters.length)];
+//   }
+//   return token;
+// } 
 
   export const createUserProfileDocument = async (userAuth, additionalData) => {
   		 if (!userAuth) return;
 
         console.log(userAuth);
 
-        const { displayName, email, uid } = userAuth;
+        const { displayName} = userAuth;
 
         const createdAt = new Date();
 

@@ -4,7 +4,7 @@ import FormInput from '../form-input/form-input-component';
 
 import CustomButton from '../custom-button/custom-button.component';
 
-import { auth, createUserProfileDocument, createUserProfileInDatabase, createUserProfileInDatabaseVerfied} from '../../firebase/firebase.utils';
+import { auth, createUserProfileInDatabaseVerfied} from '../../firebase/firebase.utils';
 
 import { SignUpWrap, SignUpTitle } from './sign-up.styles'
 

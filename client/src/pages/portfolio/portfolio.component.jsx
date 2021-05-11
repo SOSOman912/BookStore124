@@ -22,7 +22,7 @@ import { PortFolioPageContainer,
 
 class PortfolioPage extends React.Component {
 	render() {
-		const {UserInformationHidden,BuyingHistoryHidden,ProductsToRatingHidden,CurrentUser,toggleUserInformationHidden,toggleBuyingHistoryHidden,toggleRatingsHidden} = this.props
+		const {UserInformationHidden,BuyingHistoryHidden,ProductsToRatingHidden,toggleUserInformationHidden,toggleBuyingHistoryHidden,toggleRatingsHidden} = this.props
 		return(
 		<PortFolioPageContainer>
 			<PortFolioContentContainer>

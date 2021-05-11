@@ -2,7 +2,6 @@ import React from 'react';
 import {connect} from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 import { UserInformationContainer,
-		 ContentContainer,
 		 CheckoutHeaderWrap,
 		 HeaderBlockWrap,
 		 BuyingHistoryItemContainer
@@ -10,9 +9,6 @@ import { UserInformationContainer,
 
 import {selectCurrentUser} from '../../redux/cart/cart.selectors';
 import {selectBuyingHistory} from '../../redux/Profile/Profile.selectors';
-
-import ProductToRatingsItem from './ProductToRatings/ProductToRatingsItem.component'
-
 import ProductToRatingsDetail from './ProductToRatings/ProductToRatingsDetail.component'
 
 const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsync}) => {

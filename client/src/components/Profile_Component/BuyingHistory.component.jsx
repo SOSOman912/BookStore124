@@ -1,11 +1,9 @@
 import React from 'react';
 import {connect} from 'react-redux';
 import { createStructuredSelector } from 'reselect';
-import { UserInformationContainer,
-		 ContentContainer
+import { UserInformationContainer
 		} from './Userinformation.styles.jsx';
-import axios from 'axios'
-
+		
 import {selectCurrentUser} from '../../redux/cart/cart.selectors';
 import BuyingHistoryItem from './BuyingHistoryItem/BuyingHistoryItem.component'
 import {selectBuyingHistory} from '../../redux/Profile/Profile.selectors';

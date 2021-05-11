@@ -4,8 +4,7 @@ import { connect } from 'react-redux';
 import { createStructuredSelector } from 'reselect';
 
 import './App.scss';
-import {ContentContainer,ChatBotContainer,ContentBackgroudn} from './App.styles'
-import ChatBot from './components/chatBot/chatBot.components.jsx';
+import {ContentContainer} from './App.styles'
 import {selectDetailHidden, selectLoginMessageHidden} from './redux/shop/shop.selectors'
 import DetailViewer from './components/detail/detail.component'
 import Homepage from './pages/homepage/homepage.components';
@@ -13,7 +12,7 @@ import ShopPage from './pages/shop/shop.component';
 import CheckoutPage from './pages/checkout/checkout.component'
 import SignInAndSignUpPage from './pages/sign-in-and-sign-up/sign-in-and-sign-up.component';
 import Header from './components/header/header.component';
-import { auth, createUserProfileDocument, CheckIfUserExist } from './firebase/firebase.utils';
+import { auth, createUserProfileDocument } from './firebase/firebase.utils';
 import { setCurrentUser } from './redux/cart/cart.actions';
 import { selectCurrentUser } from './redux/cart/cart.selectors';
 import { fetchCollectionsStartAsync, fetchRecommendationListAsync,setRecommendationData} from './redux/shop/shop.actions';
@@ -32,7 +31,7 @@ class App extends React.Component {
 
     this.unsubscribeFromAuth = auth.onAuthStateChanged(async userAuth => {
       if (userAuth) { 
-        const userRef = await createUserProfileDocument(userAuth).then(response => 
+        await createUserProfileDocument(userAuth).then(response => 
           axios.get('/api/login', {
             params: {
               user_id: response.userAuth.uid,

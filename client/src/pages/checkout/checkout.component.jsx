@@ -7,7 +7,7 @@ import { selectCartItems, selectCartTotal} from '../../redux/cart/cart.selectors
 import CheckoutItem from '../../components/checkout-item/checkout-item.component';
 import StripeCheckoutButton from '../../components/stripe-button/stripe-button.component';
 
-import { CheckoutPageWrap, CheckoutHeaderWrap, HeaderBlockWrap, TotalWrap,  WarningWrap } from './checkout.styles.jsx'
+import { CheckoutPageWrap, CheckoutHeaderWrap, HeaderBlockWrap, TotalWrap } from './checkout.styles.jsx'
 
 const checkoutPage = ({ cartItems, Total }) => (
 	<CheckoutPageWrap >

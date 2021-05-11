@@ -1,6 +1,6 @@
 import shopActionType from './shop.types'
 
-import {fetchingDataFromServerforbasicUse,fetchingDataFromServer} from '../../pages/shop/shopData.fetching.js';
+import {fetchingDataFromServer} from '../../pages/shop/shopData.fetching.js';
 
 import {fetchingRecommendationListData} from './shop.utils.js';
 
@@ -35,7 +35,7 @@ export const fetchCollectionsStartAsync = () => {
 	return dispatch => {
 		try {
 		dispatch(fetchCollectionsStart());
-		const Basicdata = fetchingDataFromServer()
+		fetchingDataFromServer()
 		.then((data) => dispatch(fetchCollectionsSuccess(data))
 		);
 		} catch (error) {
@@ -48,7 +48,7 @@ export const fetchRecommendationListAsync = (id) => {
 	return dispatch => {
 		try {
 		console.log("Start Fetching Recommendation List");
-		const Basicdata = fetchingRecommendationListData(id)
+		fetchingRecommendationListData(id)
 		.then(data => dispatch(setRecommendationData(data))
 		);
 		} catch (error) {

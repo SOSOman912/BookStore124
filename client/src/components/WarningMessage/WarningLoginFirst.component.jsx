@@ -6,7 +6,6 @@ import { DetailWrapper,
 		 Overlay,
 		 Colorbox,
 		 Boxwrapper,
-		 BoxContent,
 		 Content,
 		 Button
 		} from './WarningLoginFirst.styles';

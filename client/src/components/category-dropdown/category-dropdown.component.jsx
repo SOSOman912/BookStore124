@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { selectCollectionForPreview } from '../../redux/shop/shop.selectors.js';
 import { createStructuredSelector } from 'reselect';
 import {Category,
-		CategoryBox,
 		CategoryTitle,
 		ARROW,
 		CategoryItemBox
