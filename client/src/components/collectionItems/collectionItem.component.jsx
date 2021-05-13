@@ -8,9 +8,11 @@ import {addElaboratedItem, togglelogininmessagehidden} from '../../redux/shop/sh
 
 import { createStructuredSelector } from 'reselect';
 
-import { StarIconWrapper, ImageAndCustomButtonWrapper, CollectionItemWrap, Image, ButtonWrapper, CustomButtonWrap, CollectionFooter, Name, Price, StarRating } from './collectionItem.styles.jsx'
+import { StarIconWrapper,OptionLink, ImageAndCustomButtonWrapper, CollectionItemWrap, Image, ButtonWrapper, CustomButtonWrap, CollectionFooter, Name, Price, StarRating } from './collectionItem.styles.jsx'
 
 import {selectCurrentUser} from '../../redux/cart/cart.selectors'
+
+import { withRouter } from 'react-router-dom'
 
 function StarIcon(props) {
 	  const { fill = 'none' } = props;
@@ -37,7 +39,7 @@ function RatingIcon(props) {
 }
 
 const CollectionItem =({ item, addItem, addElaboratedItem, CurrentUser,loginmessageHidden}) => {
-	const { authors , image_url, original_title, sale_price, average_rating } = item;
+	const { authors , image_url, original_title, sale_price, average_rating, id } = item;
 
 	return (
 		<CollectionItemWrap >
@@ -49,13 +51,12 @@ const CollectionItem =({ item, addItem, addElaboratedItem, CurrentUser,loginmess
 					 }}
 				 />	
 				 <ButtonWrapper>
-					<CustomButtonWrap inverted onClick={() => addElaboratedItem(item)}> Detail </CustomButtonWrap>
+					<CustomButtonWrap inverted><OptionLink to={`/product/${id}`}>Detail</OptionLink></CustomButtonWrap>
 					<CustomButtonWrap inverted onClick={() => CurrentUser? addItem(item) : loginmessageHidden()}> Add to cart</CustomButtonWrap>
 				</ButtonWrapper>
 			</ImageAndCustomButtonWrapper>
 				<CollectionFooter>
 						<Name className='name'>{original_title}</Name>
-						<Name className='author'><b>Author:</b> {authors}</Name>
 						<Price className='price'>${sale_price}</Price>
 						<StarRating>
 							{[1,2,3,4,5].map((index) => {
@@ -63,8 +64,6 @@ const CollectionItem =({ item, addItem, addElaboratedItem, CurrentUser,loginmess
 									<RatingIcon key={index} index={index} rating={average_rating} />
 									)
 							})}
-
-							
 						</StarRating>
 				</CollectionFooter>
 		</CollectionItemWrap>)
@@ -80,4 +79,4 @@ const mapDispatchToProps = dispatch => ({
 	loginmessageHidden: () => dispatch(togglelogininmessagehidden())
 })
 
-export default connect( mapStateToProps , mapDispatchToProps)(CollectionItem);
+export default withRouter(connect(mapStateToProps,mapDispatchToProps)(CollectionItem));

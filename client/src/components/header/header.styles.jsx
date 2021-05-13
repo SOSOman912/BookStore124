@@ -17,7 +17,7 @@ export const HeaderContainer = styled.div`
 `
 
 export const LogoContainer = styled(Link)`
-    height:100%%;
+    height:100%;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -57,6 +57,7 @@ export const OptionLink = styled(Link)`
       color:black;
       font-weight:700;
       padding:0px 20px;
+      text-decoration: none;
 `
 
 export const LOGO = styled(Logo)`

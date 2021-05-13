@@ -31,6 +31,20 @@ export const fetchCollectionsFailure = errorMessage => ({
 	payload: errorMessage
 })
 
+export const collaborativefilterStart = () => ({
+	type: shopActionType.COLLABORATIVE_FILTER_START
+})
+
+export const collaborativefilterSuccess = RecommendationList => ({
+	type: shopActionType.COLLABORATIVE_FILTER_SUCCESS,
+	payload: RecommendationList
+})
+
+export const collaborativefilterFailure = errorMessage => ({
+	type: shopActionType.COLLABORATIVE_FILTER_FAILURE,
+	payload: errorMessage
+})
+
 export const fetchCollectionsStartAsync = () => {
 	return dispatch => {
 		try {
@@ -47,12 +61,12 @@ export const fetchCollectionsStartAsync = () => {
 export const fetchRecommendationListAsync = (id) => {
 	return dispatch => {
 		try {
-		console.log("Start Fetching Recommendation List");
+		dispatch(collaborativefilterStart());
 		fetchingRecommendationListData(id)
-		.then(data => dispatch(setRecommendationData(data))
+		.then(data => dispatch(collaborativefilterSuccess(data))
 		);
 		} catch (error) {
-			console.log(error);
+			dispatch(collaborativefilterFailure(error.message));
 		} 
 	}
 }
@@ -69,10 +83,6 @@ export const changePosterToShow = (number) => ({
 
 export const togglecategoryhidden = () => ({
 	type:shopActionType.TOGGLE_CATEGORY_HIDDEN,
-})
-
-export const getrecommendationItems = () => ({
-	type:shopActionType.GET_RECOMMENDATION_ITEMS,
 })
 
 export const togglelogininmessagehidden = () => ({

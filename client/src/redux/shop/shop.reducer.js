@@ -2,14 +2,16 @@ import shopActionType  from './shop.types'
 
 const INITIAL_STATE = {
 	collections: null,
-	isFetching: false,
+	isFetching: true,
 	errorMessage: undefined,
 	ElaboratedItems: '',
 	hidden: true,
 	PosterToshow: 1,
 	Categoryhidden: true,
 	LoginMessagehidden: true,
-	recommendationList: []
+	recommendationList: [],
+	isAnalyzing: true,
+	AnalyzingerrorMessage: undefined,
 }
 
 const shopReducer = ( state = INITIAL_STATE, action) => {
@@ -42,6 +44,23 @@ const shopReducer = ( state = INITIAL_STATE, action) => {
 				...state,
 				isFetching:false,
 				errorMessage: action.payload
+			}
+		case shopActionType.COLLABORATIVE_FILTER_START:
+			return {
+				...state,
+				isAnalyzing: true
+			}
+		case shopActionType.COLLABORATIVE_FILTER_SUCCESS:
+			return {
+				...state,
+				isAnalyzing:false,
+				recommendationList: action.payload
+			}
+		case shopActionType.COLLABORATIVE_FILTER_FAILURE:
+			return {
+				...state,
+				isAnalyzing:false,
+				AnalyzingerrorMessage: action.payload
 			}
 		case shopActionType.UPDATE_COLLECTIONS:
 			return {

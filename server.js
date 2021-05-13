@@ -110,9 +110,14 @@ const GetcustomerInformation = async(data) => {
 // }
 
 const RetrievingDatasFromPostgreSQL = async() => {
-    let rawdata = fs.readFileSync('./books.json');
-    let dataset = JSON.parse(rawdata);
-    return dataset;
+    try {
+        let rawdata = fs.readFileSync('./books.json');
+        let dataset = await JSON.parse(rawdata);
+        return dataset;
+    } catch (err) {
+      console.log(err);
+    }
+
 }
 
 const CheckIfCustomerExisted = async(data) => {
@@ -626,10 +631,14 @@ const dialogflowFulfillment = async(request, response) => {
   }
 
 app.get('/api/getData', async(req, res) => { 
-    var ResData = await RetrievingDatasFromPostgreSQL();
-    app.set("booksinformation",ResData);
-    req.session.BookData = ResData;
-    res.send(ResData);  
+    try {
+      var ResData = await RetrievingDatasFromPostgreSQL();
+      app.set("booksinformation",ResData);
+      req.session.BookData = ResData;
+      res.send(ResData); 
+    } catch (err) {
+      res.status(500).send({ error:err});
+    } 
 })
 
 app.post('/api/updatecartlist', async(req,res) => {
@@ -791,29 +800,32 @@ app.get('/api/login', async (request, response) => {
   
 });
 
-app.get('/service-worker.js', (req,res) => {
-  res.sendFile(path.resolve(__dirname,'..','build','service-worker.js'));
-})
-
 app.get('/api/fetchRecommendationList', async (request,response) => {
-    var ProductData = await RetrievingDatasFromPostgreSQL();
-    console.log("ID:",request.query.id)
-    var recommendationList = await collaborativeFilter.recomendation_eng(request.query.id)
+    try {
+        var ProductData = await RetrievingDatasFromPostgreSQL();
+            console.log("ID:",request.query.id)
+            var recommendationList = await collaborativeFilter.recomendation_eng(request.query.id)
 
-    if(!recommendationList == []) {
-      var TransformingRecommendationList = recommendationList.map(recommendationItem => {
-           
-            for ( var i = 0; i< ProductData.length; i++ ) {
-              if (recommendationItem == ProductData[i].id) {
-                return {...ProductData[i]}
-              }
-            }
-          })
-            } else {
-              console.log("recommendationList is null")
-              var TransformingRecommendationList = [];
-            }   
-    response.send(TransformingRecommendationList);
+            console.log(recommendationList);
+
+            if(!recommendationList == []) {
+              var TransformingRecommendationList = recommendationList.map(recommendationItem => {
+                   
+                    for ( var i = 0; i< ProductData.length; i++ ) {
+                      if (recommendationItem == ProductData[i].id) {
+                        return {...ProductData[i]}
+                      }
+                    }
+                  })
+                    } else {
+                      console.log("recommendationList is null")
+                      var TransformingRecommendationList = [];
+                    }   
+          response.send(TransformingRecommendationList);
+    } catch (err) {
+      response.status(500).send({ error: err});
+    }
+    
 })
 
 app.get('/api/checkifexist', async (request,response) => {

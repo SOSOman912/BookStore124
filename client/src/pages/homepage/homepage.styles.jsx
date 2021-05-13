@@ -26,6 +26,13 @@ export const SecondSection = styled.div`
 	justify-content:center;
 `
 
+export const ThirdSection = styled.div`
+	width:100%;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+`
+
 export const EmptyDiv = styled.div`
 	width:488px;
 	height:100%;

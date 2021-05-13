@@ -1,4 +1,5 @@
 import styled, {keyframes} from 'styled-components'
+import { Link } from 'react-router-dom';
 
 import CustomButton from '../custom-button/custom-button.component'
 
@@ -18,15 +19,12 @@ const fadingIn = keyframes`
 `
 
 export const CollectionItemWrap = styled.div`
-	margin:0% 10%;
 	display:flex;
 	flex-direction: column;
-	width:150px;
-	height: 250px;
+	width:250px;
+	height: 300px;
 	align-items:center;
 	position:relative;
-	margin-bottom: 50px;
-	margin-top:10px;
 
 	&:hover {
 		.image {
@@ -40,8 +38,8 @@ export const CollectionItemWrap = styled.div`
 ` 
 
 export const ImageAndCustomButtonWrapper = styled.div`
-	width:100%;
-	height:80%;
+	width:150px;
+	height:210px;
 	position:relative;
 	margin-bottom:5px;
 `
@@ -54,7 +52,7 @@ export const ImageAndCustomButtonWrapper = styled.div`
 	`
 
 export const ButtonWrapper = styled.div`
-	width:70%;
+	width:100%;
 	top:50%;
 	left:50%;
 	transform:translate(-50%,-50%);
@@ -108,4 +106,27 @@ export const StarIconWrapper = styled.div`
 	height:150px;
 `
 
+export const extensionWrapper = styled.div`
+	width:150px;
+	height:100px;
+	position:relative;
+`
+
+export const CircleCloser = styled.div`
+	border-radius:50%;
+	border:1px soild grey;
+	display:flex;
+	justify-content:center;
+	align-items:center;
+	cursor:pointer;
+`
+
+export const OptionLink = styled(Link)`
+      cursor:pointer;
+      color:white;
+      font-weight:700;
+      padding:0px 20px;
+
+
+`
 

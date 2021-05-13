@@ -1,8 +1,9 @@
 import styled from 'styled-components';
 
-export const CollaborativeFilterPreviewWrap = styled.div`
-	width:1525px:
+export const CollaborativeFilterPreviewWrap = styled.div`	
+	width:100%;
 	display:flex;
+	flex-direction:column;
 	justify-content:center;
 	margin-bottom:30px;
 `

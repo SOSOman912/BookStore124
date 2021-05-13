@@ -181,6 +181,8 @@ for (var other in TransformedDataset) {
 			simsum.setDefault(item,similar);
 		}
 	}
+
+	console.log(totals);
 }
 
 for(var item in totals){

@@ -5,8 +5,7 @@ import { createStructuredSelector } from 'reselect';
 
 import './App.scss';
 import {ContentContainer} from './App.styles'
-import {selectDetailHidden, selectLoginMessageHidden} from './redux/shop/shop.selectors'
-import DetailViewer from './components/detail/detail.component'
+import {selectLoginMessageHidden} from './redux/shop/shop.selectors'
 import Homepage from './pages/homepage/homepage.components';
 import ShopPage from './pages/shop/shop.component';
 import CheckoutPage from './pages/checkout/checkout.component'
@@ -15,12 +14,14 @@ import Header from './components/header/header.component';
 import { auth, createUserProfileDocument } from './firebase/firebase.utils';
 import { setCurrentUser } from './redux/cart/cart.actions';
 import { selectCurrentUser } from './redux/cart/cart.selectors';
-import { fetchCollectionsStartAsync, fetchRecommendationListAsync,setRecommendationData} from './redux/shop/shop.actions';
+import { fetchCollectionsStartAsync, fetchRecommendationListAsync,collaborativefilterSuccess} from './redux/shop/shop.actions';
 import axios from 'axios';
 import EmailRegistrationPage from './pages/Email/Email.components.jsx';
 import PortfolioPage from './pages/portfolio/portfolio.component.jsx';
 import WarningLoginFirst from './components/WarningMessage/WarningLoginFirst.component'
 import {fetchBuyingHistoryStartAsync} from './redux/Profile/Profile.actions.js'
+import Footer from './pages/Footer/Footer.component.jsx'
+import ProductPage from './pages/Product/Product.component.jsx';
 
 class App extends React.Component {
   unsubscribeFromAuth = null;
@@ -54,12 +55,9 @@ class App extends React.Component {
   }
 
   render() {
-    const { DetailHidden, LoginHidden} = this.props;
+    const {LoginHidden} = this.props;
     return (
           <ContentContainer>
-                { DetailHidden ? null :
-                  <DetailViewer />
-                }
                 { LoginHidden ? null :
                   <WarningLoginFirst />
                 }
@@ -71,7 +69,9 @@ class App extends React.Component {
                     <Route exact path='/signin' render={() => this.props.currentUser ? (<Redirect to ='/' />) : (<SignInAndSignUpPage />)} />
                     <Route exact path='/EmailSended' component={EmailRegistrationPage} />
                     <Route exact path='/Portfolio' component={PortfolioPage} />
+                    <Route exact path='/product/:id' component={ProductPage} />
                   </Switch>   
+                  <Footer />
           </ContentContainer>
     );
   }
@@ -79,12 +79,11 @@ class App extends React.Component {
 
 const mapStateToProps = createStructuredSelector({
   currentUser: selectCurrentUser,
-  DetailHidden:  selectDetailHidden,
   LoginHidden: selectLoginMessageHidden
 })
 
 const mapDispatchToProps = dispatch => ({
-  setRecommendationData: list => dispatch(setRecommendationData(list)),
+  setRecommendationData: list => dispatch(collaborativefilterSuccess(list)),
   setCurrentUser: user => dispatch(setCurrentUser(user)),
   fetchCollectionsStartAsync:  () => dispatch(fetchCollectionsStartAsync()),
   fetchBuyingHistoryStartAsync: currentUser => dispatch(fetchBuyingHistoryStartAsync(currentUser)),

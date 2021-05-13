@@ -61,3 +61,8 @@ export const selectRecommendationlist = createSelector(
 	[selectshop],
 	shop => shop.recommendationList
 	)
+
+export const selectIsAnalyzing = createSelector(
+	[selectshop],
+	shop => shop.isAnalyzing
+	)
