@@ -181,8 +181,6 @@ for (var other in TransformedDataset) {
 			simsum.setDefault(item,similar);
 		}
 	}
-
-	console.log(totals);
 }
 
 for(var item in totals){
@@ -203,6 +201,8 @@ var recommend = [];
 	for (var i in rank_lst) {
 		recommend.push(rank_lst[i].items);
 	}
+
+	console.log(recommend);
 
 	return recommend;
 

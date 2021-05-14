@@ -24,3 +24,7 @@ export const setCurrentUser = user => ({
 	type: CartActionTypes.SET_CURRENT_USER,
 	payload: user
 });
+
+export const cleanALlItemsFromCart = () => ({
+	type: CartActionTypes.CLEAN_ALL_ITEM
+})

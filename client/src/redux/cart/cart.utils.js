@@ -74,6 +74,15 @@ export const clearItemFromCart = (state, cartItemToClear) => {
 	return newCartlist5;
 }
 
+export const clearAllItemsFromCart = (state) => {
+	const {currentUser} = state;
+	axios.post('/api/updatecartlist', {
+		cartlist:[],
+		users:currentUser
+	})
+	return [];
+} 
+
 export const checkingCartList = (cartlist) => {
 	if (cartlist == null) {
 		return [];

@@ -14,7 +14,6 @@ const Header = ({currentUser, hidden, shake,togglecategoryhidden, categoryhidden
 
 const ReDirectToHomePage = () => {
 	history.push('/');
-	history.go(0)
 }
 
 	return(

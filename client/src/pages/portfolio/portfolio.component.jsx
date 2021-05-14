@@ -58,7 +58,6 @@ class PortfolioPage extends React.Component {
 						null
 						: <BuyingHistory/>
 					}
-
 					</SecondSection>
 				</PortFolioContent>
 			</PortFolioContentContainer>

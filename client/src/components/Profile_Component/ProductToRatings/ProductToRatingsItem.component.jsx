@@ -28,11 +28,7 @@ const ProductToRatingsItem = ({cartItem}) => {
 					<span>Rate</span>
 				</HeaderBlockWrap>
 			</CheckoutHeaderWrap>
-			{   
-				items.map(item => (
-					<ProductToRatingsDetail Item={item}/>
-					))
-			}
+					<ProductToRatingsDetail Items={cartItem}/>
 		</ProductToRatingsItemContainer>
 		)
 }

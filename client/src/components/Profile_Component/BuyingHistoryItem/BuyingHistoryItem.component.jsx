@@ -60,11 +60,8 @@ const BuyingHistoryItem = ({cartItem}) => {
 					<span>Price</span>
 				</HeaderBlockWrap>
 			</CheckoutHeaderWrap>
-			{
-				items.map(item => (
-					<BuyinghistoryDetail Item={item}/>
-					))
-			}
+				<BuyinghistoryDetail Item={items}/>
+
 		</BuyingHistoryItemContainer>
 		)
 }

@@ -44,18 +44,21 @@ function RatingIcon(props) {
 		)
 }
 
-function SetRating(id,UserId,Rating) {
+function SetRating(id,UserId,Rating,OrderID) {
 	axios.post('/api/SetRating', {
 		bookid: id,
-		UserId:UserId,
-		Rating:Rating
-	});
+		UserId:UserId,	
+		Rating:Rating,
+		id:OrderID
+	})
 }
 
 const ProductToRatingsDetail = ({Item,CurrentUser}) => {
-	const {small_image_url,title,sale_price,id} = Item
+	const {small_image_url,title,sale_price,id} = Item.items
 
 	const UserId = CurrentUser.id;
+
+	const [RatingStatus, setRatingStatus] = React.useState(false);
 
 	const [rating, setRating] = React.useState();
 
@@ -73,6 +76,11 @@ const ProductToRatingsDetail = ({Item,CurrentUser}) => {
 		console.log(index);
 		await setRating(index);
 	};
+
+	function ButtonSubmit(id,UserId,Rating,OrderID) {
+	SetRating(id,UserId,Rating,OrderID);
+	setRatingStatus(true);
+	}
 
 	return(
 		<ItemContainer>
@@ -94,9 +102,13 @@ const ProductToRatingsDetail = ({Item,CurrentUser}) => {
 					)
 				}
 				</StarRating>
-				<SubmitButton onClick={() => SetRating(id,UserId,rating)}>
+				{	RatingStatus ? 
+					null :
+					<SubmitButton onClick={() => ButtonSubmit(id,UserId,rating,Item.id)}>
 					Submit
-				</SubmitButton>
+					</SubmitButton>
+				}
+				
 			</RatingWrapper>
 		</ItemContainer>
 	)

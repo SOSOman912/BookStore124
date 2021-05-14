@@ -12,6 +12,8 @@ import {selectBuyingHistory} from '../../redux/Profile/Profile.selectors';
 import ProductToRatingsDetail from './ProductToRatings/ProductToRatingsDetail.component'
 
 const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsync}) => {
+
+
 	return (
 		<UserInformationContainer>
 			<h1>PRODUCT TO RATES</h1>
@@ -32,9 +34,9 @@ const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsyn
 			</CheckoutHeaderWrap>
 			{
 				BuyingHistory.map(item => (
-					item.items.map(data => (
-						<ProductToRatingsDetail Item={data} />
-						))
+					    !item.UserAlreadyRated ? 
+						<ProductToRatingsDetail Item={item} />
+						: null
 				))
 			}
 			</BuyingHistoryItemContainer>

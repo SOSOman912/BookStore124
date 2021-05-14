@@ -1,6 +1,9 @@
 import React from 'react';
 import StripeCheckout from 'react-stripe-checkout';
 import axios from 'axios';
+import { withRouter } from 'react-router-dom'
+import { cleanALlItemsFromCart } from '../../redux/cart/cart.actions';
+import {connect} from 'react-redux';
 
 const GenerateToken = function () {
   const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -11,7 +14,7 @@ const GenerateToken = function () {
   return token;
 } 
 
-const StripeCheckoutButton = ({ price , CartList}) => {
+const StripeCheckoutButton = ({ price , CartList, history,cleanALlItemsFromCart}) => {
   const priceForStripe = price * 100;
   const publishableKey = 'pk_test_51I2etmDwDhx5BuMktM2pH5I8ZCPkUaFC4rf6VIY4tzZyQYG4dKP5PL8rVknjc9LOlEca5XAvYeNU2KDrvY6U4JgS00LV0Ktzj8';
   const receipt_id = GenerateToken()
@@ -26,7 +29,6 @@ const StripeCheckoutButton = ({ price , CartList}) => {
       }
     })
       .then(response => {
-        alert('succesful payment');
         axios({
           url: '/api/updateHistory',
           method: 'post',
@@ -38,6 +40,9 @@ const StripeCheckoutButton = ({ price , CartList}) => {
             Items: CartList
           }
         })
+        alert('succesful payment');
+        cleanALlItemsFromCart();
+        history.push('/');
       })
       .catch(error => {
         console.log('Payment Error: ', error);
@@ -65,4 +70,9 @@ const StripeCheckoutButton = ({ price , CartList}) => {
   );
 };
 
-export default StripeCheckoutButton;
+const mapDispatchToProps = (dispatch) => ({
+cleanALlItemsFromCart: () => dispatch(cleanALlItemsFromCart())
+})
+
+
+export default withRouter(connect(null,mapDispatchToProps)(StripeCheckoutButton));

@@ -164,11 +164,21 @@ const ActiveAccount = async(data) => {
 }
 
 const UpdateHistory = async(data) => {
-  const query = `INSERT INTO order_log (id, customer_id, created_at, updated_at, rating, items)VALUES('${data.id}','${data.customer_id}','${data.created_at}','${data.updated_at}','${data.Rating}','${data.Items}')`;
+  const query = `INSERT INTO order_log (id, customer_id, created_at, updated_at, rating, product_id, quantity)VALUES('${data.id}','${data.customer_id}','${data.created_at}','${data.updated_at}','${data.Rating}','${data.product_id}','${data.quantity}')`;
   try {
     const client = await pool1.connect();
     await client.query(query);
     console.log("UpdateHistory - UpdateCompleted")
+    client.release()
+  } catch (err) {
+    throw (err);
+  }
+}
+const SetItemRatingStatus = async(data) => {
+  const query = `UPDATE order_log SET rating = 'true' WHERE id = '${data.id}' And product_id = '${data.bookid}'`
+  try {
+    const client = await pool1.connect();
+    await client.query(query);
     client.release()
   } catch (err) {
     throw (err);
@@ -680,6 +690,7 @@ app.post('/api/SendConformationEmail', (request, response) => {
 app.post('/api/SetRating', (request, response) => {
   try{
     SetRatingToPostgresql(request.body);
+    SetItemRatingStatus(request.body);
     response.status(200).send({success: "SetRatingSuccess"})
   } catch (err) {
     response.status(500).send({error: err});
@@ -691,24 +702,36 @@ app.post('/api/updateHistory', (request, response) => {
       const customerData = app.get("currentUser")
       const CList = request.body.Items.map(item => ({
           product_id: item.id,
-          quantity: item.quantity,
-          Rating: false
+          quantity: item.quantity
         }));
 
-      const CCList = JSON.stringify(CList);
-
-      const snapshot = {
+      CList.forEach(item => {
+        const snapshot = {
           customer_id: customerData[0].id,
-          Items: CCList,
           id: request.body.id,
           created_at: request.body.created_at,
           updated_at: request.body.updated_at,
-          Rating: request.body.Rating
+          Rating: request.body.Rating,
+          product_id: item.product_id,
+          quantity: item.quantity
         }
+
+        UpdateHistory(snapshot);
+      })
+
+      // const CCList = JSON.stringify(CList);
+
+      // const snapshot = {
+      //     customer_id: customerData[0].id,
+      //     Items: CCList,
+      //     id: request.body.id,
+      //     created_at: request.body.created_at,
+      //     updated_at: request.body.updated_at,
+      //     Rating: request.body.Rating
+      //   }
 
       app.set("currentUser",customerData);
 
-      UpdateHistory(snapshot);
 
       response.status(200).send({success: "UploadhistorySuccess"});
   } catch (err) {
@@ -721,14 +744,20 @@ app.get('/api/getBuyingHistory', async(request, response) => {
     var data = await GetBuyingHistory(request.query);
     var ProductData = await RetrievingDatasFromPostgreSQL();
 
+    console.log(data);
     for (var i = 0; i < data.length; i++) {
-      var OriginalList = data[i].items;
-      var TranformingCartList = OriginalList.map(cartItem => {
-      for (var i = 0; i< ProductData.length; i++) {
-        if (cartItem.product_id == ProductData[i].id) {
-          return {...ProductData[i], quantity: cartItem.quantity, UserAlreadyRated: cartItem.Rating};
-        }}})
-
+      var OriginalList = data[i];
+      console.log('Origincartlist:',OriginalList);
+      for (var j = 0; j< ProductData.length; j++) {
+        if (OriginalList.product_id == ProductData[j].id) {
+          if (data[i].rating == false) {
+              var TranformingCartList = {...ProductData[j], quantity: OriginalList.quantity, UserAlreadyRated:false};
+              break; 
+          } else {
+              var TranformingCartList = {...ProductData[j], quantity: OriginalList.quantity, UserAlreadyRated:true};
+              break; 
+          }
+        }}
       data[i].items = TranformingCartList;
     }
     console.log("BuyingHistory - Fetched Finished");
@@ -805,8 +834,6 @@ app.get('/api/fetchRecommendationList', async (request,response) => {
         var ProductData = await RetrievingDatasFromPostgreSQL();
             console.log("ID:",request.query.id)
             var recommendationList = await collaborativeFilter.recomendation_eng(request.query.id)
-
-            console.log(recommendationList);
 
             if(!recommendationList == []) {
               var TransformingRecommendationList = recommendationList.map(recommendationItem => {
