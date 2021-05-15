@@ -145,9 +145,22 @@ const AddingShoesToCartList = async(data,itemlist) => {
     console.log('CartList Update SUCCESS');
     client.release()
     return res.rows;
-    client.end();
   } catch (err) {
     throw (err);
+  }
+}
+
+const AddingRecommendationList= async(data,Recommendationlist) => {
+  const query = `UPDATE customerinformation SET recommendationlist = ARRAY [${Recommendationlist}] WHERE id = '${data}'`
+  try {
+    console.log("Recommendationlist",Recommendationlist);
+    const client = await pool1.connect();
+    const res = await client.query(query);
+    console.log('RecommendationList Update SUCCESS');
+    client.release()
+    return res.rows;
+  } catch (err) {
+    console.log (err);
   }
 }
 
@@ -231,24 +244,30 @@ app.post('/api/chatBot', (request, response) => {
 const dialogflowFulfillment = async(request, response) => {
   const agent = new WebhookClient({request, response})
     const Welcome = (agent) => {
-      var possibleResponse = [
-      "Hello! How can I help you?",
-      "Good day! What can I do for you today?",
-      "Greetings! how can I assist?"
-      ]
+      const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "Random Book Please",
+                },
+                {
+                  "text": "Base on my requirement please"
+                }
+              ]
+            }
+          ]
+        ]
+      }
 
-      var pick = Math.floor( Math.random() * possibleResponse.length );
-
-      var response = possibleResponse[pick];
-
-      agent.add(response);
-    }
-
-    const Lookforproduct = (agent) => {
-      
-      agent.add('Sure');
+      agent.add("Hello! This is Jimmy from bookstore 124");
+      agent.add("I am here to provide book recommendation service to you");
       agent.add('Do you want me to recommend a random book to you or recommend base on your requirement?');
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
     }
+
     const RandomBook = (agent) => {
       agent.add("Do you want me to recommend book base on books average rating or your rating history?");
       const payload = {
@@ -261,7 +280,7 @@ const dialogflowFulfillment = async(request, response) => {
                   "text": "Base on Rating",
                 },
                 {
-                  "text": "Base on your rating history (Rquire user rating history)"
+                  "text": "Base on your rating history (Require user rating history)"
                 }
               ]
             }
@@ -269,6 +288,71 @@ const dialogflowFulfillment = async(request, response) => {
         ]
       }
     agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
+    }
+
+    const BaseOnRecommendationList = async(agent) => {
+      var ProductData = await RetrievingDatasFromPostgreSQL();
+
+      var number = app.get("RecommendationListBookNumber");
+
+      var BookList = app.get("RecommendationBookList");
+
+      if(!BookList == []) {
+              var TransformingRecommendationList = BookList.map(recommendationItem => {
+                   
+                    for ( var i = 0; i< ProductData.length; i++ ) {
+                      if (recommendationItem == ProductData[i].id) {
+                        return {...ProductData[i]}
+                      }
+                    }
+                  })
+                    } else {
+                      console.log("recommendationList is null")
+                      var TransformingRecommendationList = [];
+                    }  
+
+      console.log("Dialogflow TransformingRecommendationList:",TransformingRecommendationList)
+
+      if (number == undefined) {
+        var number = 0;
+      } else {
+        number = number + 1;
+      }
+
+      app.set("RecommendationListBookNumber",number);
+
+      app.set("RecommendationBookList",BookList)
+
+      var product = TransformingRecommendationList[number];
+
+      const payload = {
+          "richContent": [
+    [
+      {
+        "type": "image",
+        "rawUrl": `${product.image_url}`,
+        "accessibilityText": `${product.title}`
+      },
+      {
+        "type": "info",
+        "title": `${product.title}`,
+        "subtitle": `This book is being recommended to you since we think that it may suit you}`,
+      },
+      {
+        "type": "chips",
+        "options": [
+          {
+            "text": "I don't like this book",
+          },
+          {
+            "text": "Add this book to my cart list please"
+          }
+        ]
+      }
+    ]
+  ]
+}
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
     }
 
 
@@ -408,7 +492,27 @@ const dialogflowFulfillment = async(request, response) => {
       AddingShoesToCartList(currentUser[0],itemlist);
       app.set('currentUser',currentUser);
 
+      const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "Yes, I want to get more recommendation on books",
+                },
+                {
+                  "text": "No, End the conversation please",
+                }
+              ]
+            }
+          ]
+        ]
+      }
+
       agent.add("Your shoes have already been added into the cartlist, before you pay your bill, please reflesh the pages first.");
+      agent.add("Is there anything I can help you besides this?")
+      agent.add(new Payload(agent.UNSPECIFIED, payload, {sendAsMessage: true, rawPayload: true}));
       }
 
       const AddingSpecificBooksToCartListWithChatBot = async(agent) => {
@@ -435,6 +539,24 @@ const dialogflowFulfillment = async(request, response) => {
       const itemlist = JSON.stringify(Origincartlist);
       AddingShoesToCartList(currentUser[0],itemlist);
       app.set('currentUser',currentUser);
+
+      const payload = {
+        "richContent": [
+          [
+            {
+              "type": "chips",
+              "options": [
+                {
+                  "text": "Yes, I want to get more recommendation on books",
+                },
+                {
+                  "text": "No, End the conversation please",
+                }
+              ]
+            }
+          ]
+        ]
+      }
 
       agent.add("Your shoes have already been added into the cartlist, before you pay your bill, please reflesh the pages first.");
       }
@@ -630,11 +752,11 @@ const dialogflowFulfillment = async(request, response) => {
     intentMap.set("SpecificBook - AddBookToCartlist", AddingSpecificBooksToCartListWithChatBot);
     intentMap.set("AnotherSpecificBook",ShowAnotherSpecificBook);
     intentMap.set("Welcome", Welcome);
-    intentMap.set("Lookforproduct", Lookforproduct);
     intentMap.set("randombook", RandomBook);
     intentMap.set("RandomBook - Rating",RandomRatingBook);
     intentMap.set("AddBooksToCart", AddingBooksToCartListWithChatBot);
     intentMap.set("SpecificBook", SpecificBook);
+    intentMap.set("BaseOnRecommendationList",BaseOnRecommendationList)
 
 
     agent.handleRequest(intentMap)
@@ -643,6 +765,7 @@ const dialogflowFulfillment = async(request, response) => {
 app.get('/api/getData', async(req, res) => { 
     try {
       var ResData = await RetrievingDatasFromPostgreSQL();
+
       app.set("booksinformation",ResData);
       req.session.BookData = ResData;
       res.send(ResData); 
@@ -719,17 +842,6 @@ app.post('/api/updateHistory', (request, response) => {
         UpdateHistory(snapshot);
       })
 
-      // const CCList = JSON.stringify(CList);
-
-      // const snapshot = {
-      //     customer_id: customerData[0].id,
-      //     Items: CCList,
-      //     id: request.body.id,
-      //     created_at: request.body.created_at,
-      //     updated_at: request.body.updated_at,
-      //     Rating: request.body.Rating
-      //   }
-
       app.set("currentUser",customerData);
 
 
@@ -793,6 +905,8 @@ app.get('/api/login', async (request, response) => {
     var customerdata = await GetcustomerInformation(userid).catch(error => console.log(error));
     console.log("Login - Customer Get:",customerdata);
 
+    app.set("RecommendationBookList",customerdata[0].recommendationlist);
+
     if(!customerdata[0].cart_list == []) { 
       console.log("Transforming cartList ......")
       var TranformingCartList = customerdata[0].cart_list.map(cartItem => {
@@ -818,6 +932,7 @@ app.get('/api/login', async (request, response) => {
       username: customerdata[0].username,
       email: customerdata[0].email,
       cart_list: TranformingCartList,
+      recommendionlist: customerdata[0].recommendationlist,
     }
 
     console.log("customer to login:",ResData.cart_list);
@@ -830,11 +945,11 @@ app.get('/api/login', async (request, response) => {
 });
 
 app.get('/api/fetchRecommendationList', async (request,response) => {
-    try {
+    try { 
         var ProductData = await RetrievingDatasFromPostgreSQL();
             console.log("ID:",request.query.id)
             var recommendationList = await collaborativeFilter.recomendation_eng(request.query.id)
-
+            await AddingRecommendationList(request.query.id, recommendationList);
             if(!recommendationList == []) {
               var TransformingRecommendationList = recommendationList.map(recommendationItem => {
                    
@@ -847,12 +962,12 @@ app.get('/api/fetchRecommendationList', async (request,response) => {
                     } else {
                       console.log("recommendationList is null")
                       var TransformingRecommendationList = [];
-                    }   
+                    }  
+          
           response.send(TransformingRecommendationList);
     } catch (err) {
       response.status(500).send({ error: err});
     }
-    
 })
 
 app.get('/api/checkifexist', async (request,response) => {

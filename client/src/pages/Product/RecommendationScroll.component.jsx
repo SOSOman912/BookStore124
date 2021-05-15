@@ -3,12 +3,9 @@ import { FilterPreview,
 		 ArrowButtonWrapper,
 		 ArrowButtonContainer,
 		 FilterContentContainer,
-		 FirstSection,
 		 FilterWrapper
 		} from './Product.styles'
 import 'bootstrap/dist/css/bootstrap.min.css'
-
-import { Alert } from 'react-bootstrap' 
 
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from 'react-icons/fa';
 

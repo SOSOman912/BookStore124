@@ -39,7 +39,7 @@ function RatingIcon(props) {
 }
 
 const CollectionItem =({ item, addItem, addElaboratedItem, CurrentUser,loginmessageHidden}) => {
-	const { authors , image_url, original_title, sale_price, average_rating, id } = item;
+	const { image_url, original_title, sale_price, average_rating, id } = item;
 
 	return (
 		<CollectionItemWrap >
