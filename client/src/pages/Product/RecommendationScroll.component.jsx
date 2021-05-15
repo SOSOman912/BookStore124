@@ -7,17 +7,40 @@ import { FilterPreview,
 		} from './Product.styles'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
+import { connect } from 'react-redux';
+
+import {createStructuredSelector} from 'reselect';
+
 import { FaArrowAltCircleLeft, FaArrowAltCircleRight } from 'react-icons/fa';
+
+import { selectCollections } from '../../redux/shop/shop.selectors';
 
 import CollectionItem from '../../components/collectionItems/collectionItem.component.jsx';
 
-const RecommendationScroll = ({Collections}) => {
+const RecommendationScroll = ({Collections,ItemCollections}) => {
 	const [minimun,setminimun ] = React.useState(0);
+
+	console.log(Collections);
 
 	function subtract(minimun) {
 		if (minimun > 0) {
 			return setminimun(minimun - 1);
 		}
+	}
+
+	if (Collections) {
+
+		var realrecommendationlist = Collections.filter((item, idx) => idx  >= minimun && idx < minimun + 4).map((item) => {
+						console.log()
+						for ( var i = 0; i< ItemCollections.length; i++ ) {
+          				if (item == ItemCollections[i].id) {
+           				return {...ItemCollections[i]}
+      				}
+               }
+			}		 			
+		)
+	} else {
+		realrecommendationlist = [];
 	}
 
 	return (
@@ -31,7 +54,7 @@ const RecommendationScroll = ({Collections}) => {
 							</ArrowButtonContainer>								
 							<FilterPreview>
 							{
-								Collections.filter((item, idx) => idx  >= minimun && idx < minimun + 4).map((item) => (
+								realrecommendationlist.map((item) => (
 									<CollectionItem key={item.id} item = {item} />
 									))
 							}
@@ -46,5 +69,9 @@ const RecommendationScroll = ({Collections}) => {
 	)
 }
 
+const mapStateToProps = createStructuredSelector({
+	ItemCollections: selectCollections,
+})
 
-export default RecommendationScroll;
+
+export default connect(mapStateToProps)(RecommendationScroll);
