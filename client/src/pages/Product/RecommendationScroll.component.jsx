@@ -17,7 +17,7 @@ import { selectCollections } from '../../redux/shop/shop.selectors';
 
 import CollectionItem from '../../components/collectionItems/collectionItem.component.jsx';
 
-const RecommendationScroll = ({Collections,ItemCollections}) => {
+const RecommendationScroll = ({Collections,ItemCollections,RecommendationList}) => {
 	const [minimun,setminimun ] = React.useState(0);
 
 	console.log(Collections);
@@ -40,7 +40,7 @@ const RecommendationScroll = ({Collections,ItemCollections}) => {
 			}		 			
 		)
 	} else {
-		realrecommendationlist = [];
+		realrecommendationlist = null;
 	}
 
 	return (
@@ -53,10 +53,15 @@ const RecommendationScroll = ({Collections,ItemCollections}) => {
 								</ArrowButtonWrapper>
 							</ArrowButtonContainer>								
 							<FilterPreview>
-							{
+							{	realrecommendationlist ?
 								realrecommendationlist.map((item) => (
 									<CollectionItem key={item.id} item = {item} />
 									))
+								: RecommendationList ?
+									RecommendationList.map((item) => (
+									<CollectionItem key={item.id} item = {item} />
+									))
+								:null
 							}
 							</FilterPreview>
 							<ArrowButtonContainer>

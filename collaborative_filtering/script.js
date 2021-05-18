@@ -139,73 +139,73 @@ module.exports.recomendation_eng = async function(person) {
 
 		return sum_sqrt;
 		}
-	}	
-
-	var dataset = await GetcustomerDatabase();
-
-	var TransformedDataset = await Transformdataset(dataset);
-
-	if (!TransformedDataset[person]) {
-		return
 	}
 
-	var totals = {
-		setDefault:function(props,value){
-			if(!this[props]) {
-				this[props] = 0;
+	try {
+				var dataset = await GetcustomerDatabase();
+
+			var TransformedDataset = await Transformdataset(dataset);
+
+			if (!TransformedDataset[person]) {
+				return
 			}
 
-	this[props] += value;
-		}
-	},
-		simsum = {
-			setDefault:function(props,value){
-				if(!this[props]){
-					this[props] = 0;
+			var totals = {
+				setDefault:function(props,value){
+					if(!this[props]) {
+						this[props] = 0;
+					}
+
+			this[props] += value;
 				}
+			},
+				simsum = {
+					setDefault:function(props,value){
+						if(!this[props]){
+							this[props] = 0;
+						}
 
-				this[props] += value;
+						this[props] += value;
+					}
+				},
+			rank_lst = [];
+
+		for (var other in TransformedDataset) {
+			if(other === person) continue;
+			var similar = euclidean_score(TransformedDataset,person,other);
+
+			if(similar <= 0) continue;
+
+			for(var item in TransformedDataset[other]){
+				if(!(item in TransformedDataset[person])||(TransformedDataset[person][item]==0)){
+					totals.setDefault(item,TransformedDataset[other][item]*similar);
+					simsum.setDefault(item,similar);
+				}
 			}
-		},
-	rank_lst = [];
-
-for (var other in TransformedDataset) {
-	if(other === person) continue;
-	var similar = euclidean_score(TransformedDataset,person,other);
-
-	if(similar <= 0) continue;
-
-	for(var item in TransformedDataset[other]){
-		if(!(item in TransformedDataset[person])||(TransformedDataset[person][item]==0)){
-			totals.setDefault(item,TransformedDataset[other][item]*similar);
-			simsum.setDefault(item,similar);
 		}
+
+		for(var item in totals){
+			if(typeof totals[item] != "function"){
+				var val = totals[item]/ simsum[item];
+				rank_lst.push({val:val,items:item});
+			}
+		}
+
+
+		rank_lst.sort(function(a,b){
+			return b.val < a.val ? -1 : b.val > a.val ?
+			1 : b.val >= a.val ? 0 : NaN;
+		});
+
+		var recommend = [];
+			for (var i in rank_lst) {
+				recommend.push(rank_lst[i].items);
+			}
+
+			return recommend;
+	}	catch (err) {
+		console.log(err);
 	}
-}
-
-for(var item in totals){
-	if(typeof totals[item] != "function"){
-		var val = totals[item]/ simsum[item];
-		rank_lst.push({val:val,items:item});
-	}
-}
-
-
-rank_lst.sort(function(a,b){
-	return b.val < a.val ? -1 : b.val > a.val ?
-	1 : b.val >= a.val ? 0 : NaN;
-});
-
-
-var recommend = [];
-	for (var i in rank_lst) {
-		recommend.push(rank_lst[i].items);
-	}
-
-	console.log(recommend);
-
-	return recommend;
-
 }
 
 var len = function(obj){

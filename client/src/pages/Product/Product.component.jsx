@@ -13,7 +13,7 @@ import { BeatLoader } from 'react-spinners'
 import RecommendationScroll from './RecommendationScroll.component';
 import {selectRecommendationlist, selectIsAnalyzing} from '../../redux/shop/shop.selectors';
 
-const ProductPage = ({Collections, isFetching,isAnalyzing, CurrentUser}) => {
+const ProductPage = ({Collections, isFetching,isAnalyzing, CurrentUser,Recommendationlist}) => {
 	let { id } = useParams();
 	if (Collections) {
     	Collections = Collections.filter(function(item){ return item.id == id});
@@ -29,9 +29,15 @@ const ProductPage = ({Collections, isFetching,isAnalyzing, CurrentUser}) => {
 			<SecondPart>
 			{ isFetching ? 
 			<BeatLoader loading	/>	
-			  : CurrentUser ? 
-			  <RecommendationScroll Collections={CurrentUser.recommendionlist} />
-			  : null
+			  : CurrentUser ?
+			  	CurrentUser.recommendionlist ?
+			  <RecommendationScroll Collections={CurrentUser.recommendionlist} RecommendationList = {null}/>
+			  : isAnalyzing ?
+			  <BeatLoader loading	/>
+			  : Recommendationlist ?
+			  	<RecommendationScroll Collections={null} RecommendationList = {Recommendationlist} />
+			  :null
+			  :null
 			}
 			</SecondPart>
 		</ProductPageContainer>
@@ -44,7 +50,8 @@ const mapStateToProps = createStructuredSelector({
 	Collections: selectCollections,
 	isFetching: selectIsCollectionFetching,
 	CurrentUser: selectCurrentUser,
-	isAnalyzing: selectIsAnalyzing
+	isAnalyzing: selectIsAnalyzing,
+	Recommendationlist: selectRecommendationlist,
 });
 
 export default connect(mapStateToProps)(ProductPage);

@@ -961,7 +961,7 @@ app.get('/api/fetchRecommendationList', async (request,response) => {
                   })
                     } else {
                       console.log("recommendationList is null")
-                      var TransformingRecommendationList = [];
+                      var TransformingRecommendationList = null;
                     }  
           
           response.send(TransformingRecommendationList);

@@ -34,8 +34,8 @@ const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsyn
 			</CheckoutHeaderWrap>
 			{
 				BuyingHistory.map(item => (
-					    !item.UserAlreadyRated ? 
-						<ProductToRatingsDetail Item={item} />
+					    !item.rating ? 
+						<ProductToRatingsDetail  Item={item} />
 						: null
 				))
 			}
