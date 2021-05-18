@@ -40,10 +40,12 @@ const StripeCheckoutButton = ({ price , CartList, history,cleanALlItemsFromCart}
             Items: CartList
           }
         })
+      }).then(response2 => {
         alert('succesful payment');
         cleanALlItemsFromCart();
         history.push('/');
       })
+      
       .catch(error => {
         console.log('Payment Error: ', error);
         alert(

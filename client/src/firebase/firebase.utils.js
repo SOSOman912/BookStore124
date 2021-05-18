@@ -28,8 +28,6 @@ const config =
   export const createUserProfileDocument = async (userAuth, additionalData) => {
   		 if (!userAuth) return;
 
-        console.log(userAuth);
-
         const { displayName} = userAuth;
 
         const createdAt = new Date();
@@ -42,8 +40,6 @@ const config =
         status:"Active",
         created_on: createdAt,
       }
-
-       console.log(data);
 
   		 return {userAuth:userAuth,dataSet:data};
   };

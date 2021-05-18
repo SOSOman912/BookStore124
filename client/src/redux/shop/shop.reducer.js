@@ -11,7 +11,7 @@ const INITIAL_STATE = {
 	LoginMessagehidden: true,
 	recommendationList: [],
 	isAnalyzing: true,
-	AnalyzingerrorMessage: undefined,
+	AnalyzingerrorMessage: undefined
 }
 
 const shopReducer = ( state = INITIAL_STATE, action) => {

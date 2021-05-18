@@ -44,13 +44,14 @@ function RatingIcon(props) {
 		)
 }
 
-function SetRating(id,UserId,Rating,OrderID) {
-	axios.post('/api/SetRating', {
+async function SetRating(id,UserId,Rating,OrderID) {
+	const res = await axios.post('/api/SetRating', {
 		bookid: id,
 		UserId:UserId,	
 		Rating:Rating,
 		id:OrderID
 	})
+	return res;
 }
 
 const ProductToRatingsDetail = ({Item,CurrentUser}) => {
@@ -73,13 +74,14 @@ const ProductToRatingsDetail = ({Item,CurrentUser}) => {
 	}
 
 	const onSaveRating = async(index) => {
-		console.log(index);
 		await setRating(index);
 	};
 
-	function ButtonSubmit(id,UserId,Rating,OrderID) {
-	SetRating(id,UserId,Rating,OrderID);
-	setRatingStatus(true);
+	async function ButtonSubmit(id,UserId,Rating,OrderID) {
+	await SetRating(id,UserId,Rating,OrderID).then(response => {
+		setRatingStatus(true);
+	})
+
 	}
 
 	return(
@@ -103,7 +105,10 @@ const ProductToRatingsDetail = ({Item,CurrentUser}) => {
 				}
 				</StarRating>
 				{	RatingStatus ? 
-					null :
+					<SubmitButton after>
+					Rated
+					</SubmitButton>
+					:
 					<SubmitButton onClick={() => ButtonSubmit(id,UserId,rating,Item.id)}>
 					Submit
 					</SubmitButton>

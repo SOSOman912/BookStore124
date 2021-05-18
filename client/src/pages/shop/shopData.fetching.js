@@ -16,7 +16,6 @@ export const fetchingDataFromServerforbasicUse = async() => {
 }
 
 export const fetchingDataFromServer = async() => {
-	console.log("Start Fetching Data");
 	
 	const makeGetRequest = async() => {
 		var res = await axios.get('/api/getData');

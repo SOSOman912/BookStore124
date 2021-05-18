@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 
 export const ImageContainer = styled.div`
     width: 25%;
@@ -35,16 +35,32 @@ export const RatingWrapper = styled.div`
 	flex-direction:column;
 `
 
+const beforeButtonStyle = css`
+	background-color:#1C98FF;
+	color:white;
+`
+
+const afterButtonStyle = css`
+	background-color:grey;
+	color:white;
+`
+
+const getButtonStyles = props => {
+	return props.after ? afterButtonStyle : beforeButtonStyle;
+}
+
+
 export const SubmitButton = styled.div`
 	cursor:pointer;
 	margin-top:20px;
 	display:flex;
 	justify-content:center;
-	color:white;
 	align-items:center;
 	border-radius:5px;
 	width:70%;
 	height:20px;
-	background-color:#1C98FF;
 	font-size:12px;
+
+		${getButtonStyles}
 `
+

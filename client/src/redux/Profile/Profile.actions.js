@@ -22,7 +22,6 @@ export const setbuyinghistoryData = (data) => ({
 export const fetchBuyingHistoryStartAsync = (id) => {
 	return dispatch => {
 		try {
-		console.log("Start Fetching Buying History");
 		fetchingBuyingHistoryData(id)
 		.then(data => dispatch(setbuyinghistoryData(data))
 		);
