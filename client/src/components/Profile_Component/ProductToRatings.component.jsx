@@ -35,7 +35,7 @@ const ProductToRatings = ({CurrentUser,BuyingHistory,fetchBuyingHistoryStartAsyn
 			{
 				BuyingHistory.map(item => (
 					    !item.rating ? 
-						<ProductToRatingsDetail  Item={item} />
+						<ProductToRatingsDetail Item={item} />
 						: null
 				))
 			}

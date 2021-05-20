@@ -49,7 +49,6 @@ const getButtonStyles = props => {
 	return props.after ? afterButtonStyle : beforeButtonStyle;
 }
 
-
 export const SubmitButton = styled.div`
 	cursor:pointer;
 	margin-top:20px;
