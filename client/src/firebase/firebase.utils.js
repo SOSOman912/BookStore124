@@ -28,7 +28,9 @@ const config =
   export const createUserProfileDocument = async (userAuth, additionalData) => {
   		 if (!userAuth) return;
 
-        const { displayName} = userAuth;
+        const { displayName } = userAuth;
+
+        console.log("hello");
 
         const createdAt = new Date();
 
@@ -55,10 +57,19 @@ const config =
    export const createUserProfileInDatabaseVerfied = async (userAuth, additionalData) => {
     if (!userAuth) return;
 
+    const createdAt = new Date();
 
     axios({
       url: '/api/userDocumentUpload',
       method: 'post',
+      data: {
+        user_id: userAuth.uid,
+        username: additionalData,
+        email: userAuth.email,
+        cart_list:null,
+        status:"Active",
+        created_on: createdAt,
+      }
       
     }).then(response => {
       console.log(response);

@@ -3,6 +3,7 @@ import filtering from '../../components/Filtering/filtering.component.jsx';
 
 export const ShopPageContainer = styled.div`
 	width:1525px;
+	min-height:90vh;
 
 	@media (max-width: 1920px) {
 	  	width:1152px;

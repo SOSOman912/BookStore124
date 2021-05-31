@@ -4,6 +4,7 @@ import Poster from '../../components/poster/poster.component.jsx'
 export const HomePageContainer = styled.div`
 	  background-color:#white;	  
 	  width:1525px;
+	  min-height:90vh;
 
 	  @media (max-width: 1920px) {
 	  	width:1152px;

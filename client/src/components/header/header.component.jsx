@@ -16,6 +16,11 @@ const ReDirectToHomePage = () => {
 	history.push('/');
 }
 
+const SignOutandRedirect = () => {
+	history.push('/')
+	auth.signOut();
+}
+
 	return(
 		<HeaderContainer >
 					<LogoContainer onClick={() => ReDirectToHomePage()}>
@@ -34,7 +39,7 @@ const ReDirectToHomePage = () => {
 							</OptionLink> 
 							{
 								currentUser?
-								<OptionLink as='div' to='/' onClick={() => auth.signOut()}> SIGN OUT </OptionLink>
+								<OptionLink as='div' to='/' onClick={() => SignOutandRedirect()}> SIGN OUT </OptionLink>
 								:
 								<OptionLink to='/signin'></OptionLink>
 							}

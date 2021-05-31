@@ -793,8 +793,9 @@ app.post('/api/updatecartlist', async(req,res) => {
 
 app.post('/api/userDocumentUpload', (request, response) => {
   try{
-  console.log(request.body);
-  UploadingDataToPostgreSQL(request.body);  
+  console.log("asjfkujksdjkfjlksajasdjfkjskljfldsjlkf",request.body);
+  const data = JSON.stringify(request.body)
+  UploadingDataToPostgreSQL(data);  
   response.status(200).send({ success: "Upload success" });
   } catch (err) {
     response.send(500).send({error:err});
@@ -859,7 +860,6 @@ app.get('/api/getBuyingHistory', async(request, response) => {
     console.log(data);
     for (var i = 0; i < data.length; i++) {
       var OriginalList = data[i];
-      console.log('Origincartlist:',OriginalList);
       for (var j = 0; j< ProductData.length; j++) {
         if (OriginalList.product_id == ProductData[j].id) {
           if (data[i].rating == false) {
@@ -882,13 +882,19 @@ app.get('/api/login', async (request, response) => {
 
     const userid = request.query.user_id;
 
-    var existed = await CheckIfCustomerExisted(userid) 
+    var data = JSON.parse(request.query.data);
+
+    var existed = await CheckIfCustomerExisted(userid);
 
     console.log(existed);
 
     if (existed[0].exists == false) {
-      console.log("Login - Can't find customer account...")
-      await UploadingDataToPostgreSQL(request.query.data);
+      if(data.username = null) {
+
+      } else {
+          console.log("Login - Can't find customer account...")
+          await UploadingDataToPostgreSQL(request.query.data);
+      }
     }
 
     console.log("Login - Starting login function:",userid);
@@ -941,7 +947,6 @@ app.get('/api/login', async (request, response) => {
   }catch (err){
     throw (err);
   }
-  
 });
 
 app.get('/api/fetchRecommendationList', async (request,response) => {

@@ -68,6 +68,7 @@ const StripeCheckoutButton = ({ price , CartList, history,cleanALlItemsFromCart}
       panelLabel='Pay Now'
       token={onToken}
       stripeKey={publishableKey}
+      locale="en"
     />
   );
 };

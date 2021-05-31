@@ -3,7 +3,7 @@ import styled from 'styled-components'
 export const PortFolioPageContainer = styled.div`
 	font-family: 'Noto Sans', sans-serif;
 	width:1525px;
-	height:1000px;
+	min-height:90vh;
 
 	@media (max-width: 1920px) {
 	  	width:1152px;

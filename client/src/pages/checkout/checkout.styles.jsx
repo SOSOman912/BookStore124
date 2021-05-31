@@ -2,7 +2,7 @@ import styled from 'styled-components';
 
 export const CheckoutPageWrap = styled.div`
   width: 55%;
-  min-height: 90vh;
+  min-height: 87vh;
   display: flex;
   flex-direction: column;
   align-items: center;
