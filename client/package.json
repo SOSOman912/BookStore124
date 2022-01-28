@@ -13,7 +13,7 @@
     "bootstrap-icons": "^1.5.0",
     "content-based-recommender": "^1.5.0",
     "dialogflow-fulfillment": "^0.6.1",
-    "firebase": "^8.1.1",
+    "firebase": "^9.6.5",
     "install": "^0.13.0",
     "node-sass": "^4.14.1",
     "npm": "^6.14.8",
